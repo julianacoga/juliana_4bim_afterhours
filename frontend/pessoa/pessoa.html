@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -6,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD - Pessoa</title>
     <link rel="stylesheet" href="./pessoa.css">
+    <script src="./pessoa.js" defer></script>
 </head>
 
 <body>
@@ -20,34 +22,41 @@
             <form id="pessoaForm">
                 <div class="search-container">
                     <label for="searchId">Buscar por CPF:</label>
-                    <div class="search-input-group">
-                        <input type="number" id="searchId" placeholder="Digite o CPF para buscar">
-                        <button type="button" id="btnBuscar">🔍 Buscar</button>
 
+                    <div class="search-input-group">
+                        <input
+                            type="text"
+                            id="searchId"
+                            placeholder="Digite o CPF para buscar"
+                            maxlength="14"
+                            inputmode="numeric"
+                        >
+
+                        <button type="button" id="btnBuscar">🔍 Buscar</button>
                         <button type="button" id="btnIncluir" class="btn-primary">Cadastrar</button>
-                        <button type="button" id="btnAlterar" class="btn-secondary"
-                            style="display: none;">Alterar</button>
+                        <button type="button" id="btnAlterar" class="btn-secondary" style="display: none;">Alterar</button>
                         <button type="button" id="btnExcluir" class="btn-danger" style="display: none;">Excluir</button>
                         <button type="button" id="btnSalvar" class="btn-save" style="display: none;">Salvar</button>
-                        <button type="button" id="btnCancelar" class="btn-cancel">Cancelar</button>
+                        <button type="button" id="btnCancelar" class="btn-cancel" style="display: none;">Cancelar</button>
                     </div>
                 </div>
 
-                <fieldset id="formFields">
+                <fieldset id="formFields" disabled>
                     <legend>Dados da Pessoa</legend>
 
                     <div class="form-group">
                         <label for="nome_pessoa">Nome:</label>
                         <input type="text" id="nome_pessoa" name="nome_pessoa" required>
                     </div>
+
                     <div class="form-group">
                         <label for="data_nascimento">Data de Nascimento:</label>
                         <input type="date" id="data_nascimento" name="data_nascimento">
                     </div>
 
-                    <div>
+                    <div class="form-group">
                         <label for="genero_pessoa">Gênero:</label>
-                        <select id="genero_pessoa" name="genero_pessoa" style="display: inline;">
+                        <select id="genero_pessoa" name="genero_pessoa" required>
                             <option value="">Selecione</option>
                             <option value="feminino">Feminino</option>
                             <option value="masculino">Masculino</option>
@@ -55,10 +64,16 @@
                             <option value="outro">Outro...</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="senha_pessoa">Senha:</label>
-                        <input type="password" id="senha_pessoa" name="senha_pessoa">
+                        <input
+                            type="password"
+                            id="senha_pessoa"
+                            name="senha_pessoa"
+                            autocomplete="new-password"
+                            placeholder="Preencha para cadastrar ou alterar"
+                        >
                     </div>
 
                     <div class="form-group">
@@ -70,36 +85,38 @@
                         <label for="telefone_pessoa">Telefone:</label>
                         <input type="tel" id="telefone_pessoa" name="telefone_pessoa" required>
                     </div>
-
                 </fieldset>
             </form>
+
             <div class="umParaum">
                 <div class="funcionario">
-                    <input type="checkbox" id="checkboxFuncionario" name="checkboxFuncionario">
-                    <span id="spanFuncionario">Funcionário</span>
-                    <select id="cargo_id_cargo" name="cargo_id_cargo" style="display: inline;">
+                    <input type="checkbox" id="checkboxFuncionario" disabled>
+                    <label for="checkboxFuncionario">Funcionário</label>
+
+                    <select id="cargo_id_cargo" disabled>
                         <option value="">Cargo</option>
                     </select>
-                    <label for="salario_funcionario">  Salário</label>
-                    <input type="number" id="salario_funcionario" name="salario_funcionario" placeholder="Salário"
-                        style="display: inline;">
+
+                    <label for="salario_funcionario">Salário</label>
+                    <input
+                        type="number"
+                        id="salario_funcionario"
+                        placeholder="Salário"
+                        min="0"
+                        step="0.01"
+                        disabled
+                    >
                 </div>
+
                 <div class="cliente">
-                    <input type="checkbox" id="checkboxCliente" name="checkboxCliente">
-                    <span id="spanCliente">Cliente</span>
+                    <input type="checkbox" id="checkboxCliente" disabled>
+                    <label for="checkboxCliente">Cliente</label>
+
                     <label for="data_cadastro_cliente">Data de cadastro</label>
-                    <input type="date" id="data_cadastro_cliente" name="data_cadastro_cliente"
-                        placeholder="Data de cadastro do cliente" style="display: inline;">
+                    <input type="date" id="data_cadastro_cliente" disabled>
                 </div>
             </div>
         </section>
-
-        <!--  //cpf_pessoa, 
-                      nome_pessoa, 
-                      data_nascimento_pessoa, 
-                      email_pessoa,
-                      telefone_pessoa
-                      -->
 
         <section class="list-section">
             <div class="table-container">
@@ -110,13 +127,13 @@
                             <th>Nome</th>
                             <th>Data Nascimento</th>
                             <th>Gênero</th>
-                            <th>Senha</th>
                             <th>Email</th>
                             <th>Telefone</th>
                         </tr>
                     </thead>
+
                     <tbody id="pessoasTableBody">
-                        <!-- Dados serão carregados dinamicamente -->
+                        <!-- Dados carregados pelo JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -124,13 +141,10 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 Sistema CRUD pessoas. Todos os direitos reservados. <br> Juliana Coga - M32 2026</p>
+        <p>© 2026 Sistema CRUD pessoas. Todos os direitos reservados.<br>Juliana Coga - M32 2026</p>
     </footer>
 
     <div id="messageContainer" class="message-container"></div>
-
-    <script src="./pessoa.js" defer></script>
-
 </body>
 
 </html>

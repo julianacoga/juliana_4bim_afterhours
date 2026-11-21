@@ -1,41 +1,43 @@
+
 const API_BASE_URL = 'http://localhost:3001';
+
 let currentPersonId = null;
 let operacao = null;
 
-// Elementos do DOM
 const form = document.getElementById('pessoaForm');
+const formFields = document.getElementById('formFields');
+
 const searchId = document.getElementById('searchId');
+
 const btnBuscar = document.getElementById('btnBuscar');
 const btnIncluir = document.getElementById('btnIncluir');
 const btnAlterar = document.getElementById('btnAlterar');
 const btnExcluir = document.getElementById('btnExcluir');
 const btnCancelar = document.getElementById('btnCancelar');
 const btnSalvar = document.getElementById('btnSalvar');
+
 const pessoasTableBody = document.getElementById('pessoasTableBody');
 const messageContainer = document.getElementById('messageContainer');
 
-// Data de hoje no fuso local (formato AAAA-MM-DD)
-function hojeLocal() {
-    const d = new Date();
-    const ano = d.getFullYear();
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const dia = String(d.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-}
+const checkboxFuncionario = document.getElementById('checkboxFuncionario');
+const checkboxCliente = document.getElementById('checkboxCliente');
 
-// Carregar lista de pessoas e popular menu de cargos ao inicializar
-document.addEventListener('DOMContentLoaded', () => {
-    carregarPessoas();
-    popularCargosSelect();
+const cargoSelect = document.getElementById('cargo_id_cargo');
+const salarioInput = document.getElementById('salario_funcionario');
+const dataCadastroInput = document.getElementById('data_cadastro_cliente');
 
-    // Impede datas futuras no calendário
-    const nasc = document.getElementById('data_nascimento');
-    nasc.max = hojeLocal();
-    nasc.min = '1900-01-01';
-    document.getElementById('data_cadastro_cliente').max = hojeLocal();
+document.addEventListener('DOMContentLoaded', async () => {
+    bloquearCampos(false);
+    mostrarBotoes(true, false, false, false, false, false);
+
+    document.getElementById('data_nascimento').max = hojeLocal();
+    document.getElementById('data_nascimento').min = '1900-01-01';
+    dataCadastroInput.max = hojeLocal();
+
+    await carregarPessoas();
+    await popularCargosSelect();
 });
 
-// Event Listeners
 btnBuscar.addEventListener('click', buscarPessoa);
 btnIncluir.addEventListener('click', incluirPessoa);
 btnAlterar.addEventListener('click', alterarPessoa);
@@ -43,35 +45,31 @@ btnExcluir.addEventListener('click', excluirPessoa);
 btnCancelar.addEventListener('click', cancelarOperacao);
 btnSalvar.addEventListener('click', salvarOperacao);
 
-mostrarBotoes(true, false, false, false, false, false);
-bloquearCampos(false);
+checkboxFuncionario.addEventListener('change', atualizarCamposRelacionados);
+checkboxCliente.addEventListener('change', atualizarCamposRelacionados);
+
+searchId.addEventListener('input', () => {
+    searchId.value = searchId.value.replace(/\D/g, '').slice(0, 11);
+});
+
+function hojeLocal() {
+    const data = new Date();
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
+}
 
 function mostrarMensagem(texto, tipo = 'info') {
-    messageContainer.innerHTML = `<div class="message ${tipo}">${texto}</div>`;
-    setTimeout(() => {
-        messageContainer.innerHTML = '';
-    }, 3000);
+    messageContainer.textContent = texto;
+    messageContainer.className = `message-container ${tipo}`;
+    messageContainer.style.display = 'block';
 }
 
-function bloquearCampos(bloquearPrimeiro) {
-    const inputs = document.querySelectorAll('input, select, checkbox');
-    inputs.forEach((input, index) => {
-        if (index === 0) {
-            input.disabled = bloquearPrimeiro;
-        } else {
-            input.disabled = !bloquearPrimeiro;
-        }
-    });
-}
-
-function limparFormulario() {
-    form.reset();
-    document.getElementById('checkboxFuncionario').checked = false;
-    document.getElementById('salario_funcionario').value = '';
-    document.getElementById('cargo_id_cargo').value = '';
-
-    document.getElementById('checkboxCliente').checked = false;
-    document.getElementById('data_cadastro_cliente').value = '';
+function limparMensagem() {
+    messageContainer.textContent = '';
+    messageContainer.style.display = 'none';
 }
 
 function mostrarBotoes(btBuscar, btIncluir, btAlterar, btExcluir, btSalvar, btCancelar) {
@@ -83,412 +81,563 @@ function mostrarBotoes(btBuscar, btIncluir, btAlterar, btExcluir, btSalvar, btCa
     btnCancelar.style.display = btCancelar ? 'inline-block' : 'none';
 }
 
+function bloquearCampos(bloquear) {
+    formFields.disabled = bloquear;
+
+    checkboxFuncionario.disabled = bloquear;
+    checkboxCliente.disabled = bloquear;
+
+    atualizarCamposRelacionados();
+
+    searchId.disabled = false;
+}
+
+function atualizarCamposRelacionados() {
+    const bloqueado = formFields.disabled;
+
+    cargoSelect.disabled = bloqueado || !checkboxFuncionario.checked;
+    salarioInput.disabled = bloqueado || !checkboxFuncionario.checked;
+    dataCadastroInput.disabled = bloqueado || !checkboxCliente.checked;
+}
+
+function limparFormulario() {
+    form.reset();
+
+    checkboxFuncionario.checked = false;
+    checkboxCliente.checked = false;
+
+    cargoSelect.value = '';
+    salarioInput.value = '';
+    dataCadastroInput.value = '';
+
+    atualizarCamposRelacionados();
+}
+
 function formatarData(dataString) {
     if (!dataString) return '';
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+
+    const data = String(dataString).split('T')[0];
+    const partes = data.split('-');
+
+    if (partes.length !== 3) return '';
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function converterDataParaISO(dataString) {
     if (!dataString) return null;
-    return new Date(dataString).toISOString();
+
+    return dataString;
 }
 
-function converterDataParaFormatoYYYYMMDD(isoDateString) {
-    if (!isoDateString || typeof isoDateString !== 'string') {
-        return '';
+async function lerResposta(response) {
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || data.sucesso === false) {
+        throw new Error(data.mensagem || `Erro na requisição (${response.status}).`);
     }
-    const partes = isoDateString.split('T');
-    return partes.length > 0 ? partes[0] : '';
+
+    return data;
 }
 
 async function funcaoEhFuncionario(pessoaId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/funcionario/${pessoaId}`);
-        const data = await response.json();
+        const response = await fetch(
+            `${API_BASE_URL}/funcionario/${encodeURIComponent(pessoaId)}`
+        );
 
-        if (response.ok && data.sucesso && data.funcionario) {
-            return {
-                ehFuncionario: true,
-                salario_funcionario: data.funcionario.salario_funcionario,
-                cargo_id_cargo: data.funcionario.cargo_id_cargo,
-            };
+        if (response.status === 404) {
+            return { ehFuncionario: false };
         }
-        return { ehFuncionario: false };
+
+        const data = await lerResposta(response);
+        const funcionario = data.funcionario || data;
+
+        return {
+            ehFuncionario: true,
+            salario_funcionario: funcionario.salario_funcionario,
+            cargo_id_cargo: funcionario.cargo_id_cargo
+        };
+
     } catch (error) {
-        console.error('Erro ao verificar se é funcionario:', error);
+        console.error('Erro ao verificar funcionário:', error);
         return { ehFuncionario: false };
     }
 }
 
 async function funcaoEhCliente(pessoaId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/cliente/${pessoaId}`);
-        const data = await response.json();
+        const response = await fetch(
+            `${API_BASE_URL}/cliente/${encodeURIComponent(pessoaId)}`
+        );
 
-        if (response.ok && (data.sucesso ? data.cliente : data)) {
-            const clienteObj = data.cliente || data;
-            return {
-                ehCliente: true,
-                data_cadastro_cliente: clienteObj.data_cadastro_cliente
-            };
+        if (response.status === 404) {
+            return { ehCliente: false };
         }
-        return { ehCliente: false };
+
+        const data = await lerResposta(response);
+        const cliente = data.cliente || data;
+
+        return {
+            ehCliente: true,
+            data_cadastro_cliente: cliente.data_cadastro_cliente
+        };
+
     } catch (error) {
-        console.error('Erro ao verificar se é cliente:', error);
+        console.error('Erro ao verificar cliente:', error);
         return { ehCliente: false };
     }
 }
 
 async function buscarPessoa() {
-    const id = searchId.value.trim();
-    if (!id) {
-        mostrarMensagem('Digite um CPF para buscar', 'warning');
+    const id = searchId.value.replace(/\D/g, '');
+
+    if (id.length !== 11) {
+        mostrarMensagem('Digite um CPF com 11 números.', 'warning');
         return;
     }
 
-    bloquearCampos(false);
-    searchId.focus();
-    try {
-        const response = await fetch(`${API_BASE_URL}/pessoa/${id}`);
-        const data = await response.json();
+    searchId.value = id;
+    limparFormulario();
+    currentPersonId = null;
 
-        if (response.ok && data.sucesso) {
-            preencherFormulario(data.pessoa);
-            mostrarBotoes(true, false, true, true, false, false);
-            mostrarMensagem('Pessoa encontrada!', 'success');
-        } else {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/pessoa/${encodeURIComponent(id)}`
+        );
+
+        if (response.status === 404) {
             limparFormulario();
             searchId.value = id;
-            mostrarBotoes(true, true, false, false, false, false);
-            mostrarMensagem('Pessoa não encontrada. Você pode incluir uma nova pessoa.', 'info');
+
             bloquearCampos(false);
+            mostrarBotoes(true, true, false, false, false, false);
+
+            mostrarMensagem('Pessoa não encontrada. Você pode cadastrar.', 'info');
+            return;
         }
+
+        const data = await lerResposta(response);
+
+        await preencherFormulario(data.pessoa);
+
+        bloquearCampos(true);
+        mostrarBotoes(true, false, true, true, false, false);
+
+        mostrarMensagem('Pessoa encontrada!', 'success');
+
     } catch (error) {
-        console.error('Erro:', error);
-        mostrarMensagem('Erro ao buscar pessoa', 'error');
+        console.error('Erro ao buscar pessoa:', error);
+        mostrarMensagem(error.message || 'Erro ao buscar pessoa.', 'error');
     }
 }
 
 async function preencherFormulario(pessoa) {
     currentPersonId = pessoa.cpf_pessoa;
     searchId.value = pessoa.cpf_pessoa;
-    document.getElementById('nome_pessoa').value = pessoa.nome_pessoa || '';
 
-    if (pessoa.data_nascimento_pessoa) {
-        const data = new Date(pessoa.data_nascimento_pessoa);
-        const dataFormatada = converterDataParaFormatoYYYYMMDD(data.toISOString());
-        document.getElementById('data_nascimento').value = dataFormatada;
-    } else {
-        document.getElementById('data_nascimento').value = '';
-    }
+    document.getElementById('nome_pessoa').value = pessoa.nome_pessoa || '';
+    document.getElementById('data_nascimento').value =
+        pessoa.data_nascimento_pessoa
+            ? String(pessoa.data_nascimento_pessoa).split('T')[0]
+            : '';
+
     document.getElementById('genero_pessoa').value = pessoa.genero_pessoa || '';
-    document.getElementById('senha_pessoa').value = pessoa.senha_pessoa || '';
+    document.getElementById('senha_pessoa').value = '';
     document.getElementById('email_pessoa').value = pessoa.email_pessoa || '';
     document.getElementById('telefone_pessoa').value = pessoa.telefone_pessoa || '';
 
-    // Verifica funcionário
-    const ehFunc = await funcaoEhFuncionario(currentPersonId);
-    if (ehFunc.ehFuncionario) {
-        document.getElementById('checkboxFuncionario').checked = true;
-        document.getElementById('cargo_id_cargo').value = ehFunc.cargo_id_cargo;
-        document.getElementById('salario_funcionario').value = ehFunc.salario_funcionario;
+    const funcionario = await funcaoEhFuncionario(currentPersonId);
+
+    checkboxFuncionario.checked = funcionario.ehFuncionario;
+
+    if (funcionario.ehFuncionario) {
+        cargoSelect.value = funcionario.cargo_id_cargo || '';
+        salarioInput.value = funcionario.salario_funcionario || '';
     } else {
-        document.getElementById('checkboxFuncionario').checked = false;
-        document.getElementById('cargo_id_cargo').value = '';
-        document.getElementById('salario_funcionario').value = '';
+        cargoSelect.value = '';
+        salarioInput.value = '';
     }
 
-    // Verifica cliente
-    const ehCli = await funcaoEhCliente(currentPersonId);
-    if (ehCli.ehCliente) {
-        document.getElementById('checkboxCliente').checked = true;
-        document.getElementById('data_cadastro_cliente').value = converterDataParaFormatoYYYYMMDD(ehCli.data_cadastro_cliente);
-    } else {
-        document.getElementById('checkboxCliente').checked = false;
-        document.getElementById('data_cadastro_cliente').value = '';
-    }
+    const cliente = await funcaoEhCliente(currentPersonId);
+
+    checkboxCliente.checked = cliente.ehCliente;
+
+    dataCadastroInput.value = cliente.ehCliente && cliente.data_cadastro_cliente
+        ? String(cliente.data_cadastro_cliente).split('T')[0]
+        : '';
+
+    atualizarCamposRelacionados();
 }
 
-async function incluirPessoa() {
-    mostrarMensagem('Digite os dados!', 'success');
-    currentPersonId = searchId.value;
+function incluirPessoa() {
+    const cpf = searchId.value.replace(/\D/g, '');
+
+    if (cpf.length !== 11) {
+        mostrarMensagem('Digite um CPF válido antes de cadastrar.', 'warning');
+        return;
+    }
+
+    currentPersonId = cpf;
     limparFormulario();
-    searchId.value = currentPersonId;
-    bloquearCampos(true);
-    mostrarBotoes(false, false, false, false, true, true);
-    document.getElementById('nome_pessoa').focus();
-    operacao = 'incluir';
-}
 
-async function alterarPessoa() {
-    mostrarMensagem('Digite os dados!', 'success');
-    bloquearCampos(true);
-    mostrarBotoes(false, false, false, false, true, true);
-    document.getElementById('nome_pessoa').focus();
-    operacao = 'alterar';
-}
+    searchId.value = cpf;
 
-async function excluirPessoa() {
-    mostrarMensagem('Excluindo pessoa...', 'info');
-    currentPersonId = searchId.value;
-    searchId.disabled = true;
     bloquearCampos(false);
     mostrarBotoes(false, false, false, false, true, true);
+
+    operacao = 'incluir';
+
+    document.getElementById('nome_pessoa').focus();
+    mostrarMensagem('Preencha os dados da nova pessoa.', 'info');
+}
+
+function alterarPessoa() {
+    if (!currentPersonId) {
+        mostrarMensagem('Busque uma pessoa antes de alterar.', 'warning');
+        return;
+    }
+
+    bloquearCampos(false);
+    mostrarBotoes(false, false, false, false, true, true);
+
+    operacao = 'alterar';
+
+    document.getElementById('nome_pessoa').focus();
+    mostrarMensagem('Altere os dados desejados e clique em Salvar.', 'info');
+}
+
+function excluirPessoa() {
+    if (!currentPersonId) {
+        mostrarMensagem('Busque uma pessoa antes de excluir.', 'warning');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja excluir esta pessoa?')) {
+        return;
+    }
+
     operacao = 'excluir';
+    salvarOperacao();
+}
+
+function validarFormulario(pessoa) {
+    if (!pessoa.nome_pessoa || !pessoa.nome_pessoa.trim()) {
+        throw new Error('Informe o nome da pessoa.');
+    }
+
+    if (!pessoa.genero_pessoa) {
+        throw new Error('Selecione o gênero.');
+    }
+
+    if (!pessoa.email_pessoa) {
+        throw new Error('Informe o email.');
+    }
+
+    if (!pessoa.telefone_pessoa) {
+        throw new Error('Informe o telefone.');
+    }
+
+    if (operacao === 'incluir' && !pessoa.senha_pessoa) {
+        throw new Error('Informe uma senha para cadastrar a pessoa.');
+    }
+
+    const nascimento = document.getElementById('data_nascimento').value;
+
+    if (nascimento && nascimento > hojeLocal()) {
+        throw new Error('A data de nascimento não pode ser futura.');
+    }
+
+    if (nascimento && nascimento < '1900-01-01') {
+        throw new Error('Data de nascimento inválida.');
+    }
+
+    if (checkboxFuncionario.checked) {
+        if (!cargoSelect.value) {
+            throw new Error('Selecione o cargo do funcionário.');
+        }
+
+        if (salarioInput.value === '' || Number(salarioInput.value) < 0) {
+            throw new Error('Informe um salário válido.');
+        }
+    }
+
+    if (checkboxCliente.checked) {
+        if (dataCadastroInput.value && dataCadastroInput.value > hojeLocal()) {
+            throw new Error('A data de cadastro não pode ser futura.');
+        }
+    }
 }
 
 async function salvarOperacao() {
-    const formData = new FormData(form);
-    const pessoa = {
-        cpf_pessoa: searchId.value.trim(),
-        nome_pessoa: formData.get('nome_pessoa'),
-        data_nascimento_pessoa: converterDataParaISO(formData.get('data_nascimento')) || null,
-        genero_pessoa: formData.get('genero_pessoa'),
-        senha_pessoa: formData.get('senha_pessoa'),
-        email_pessoa: formData.get('email_pessoa'),
-        telefone_pessoa: formData.get('telefone_pessoa')
-    };
-
-    // Validação de datas (não se aplica à exclusão)
-    if (operacao !== 'excluir') {
-        const nascimento = formData.get('data_nascimento');
-        if (nascimento && nascimento > hojeLocal()) {
-            mostrarMensagem('A data de nascimento não pode ser no futuro.', 'error');
-            return;
-        }
-        if (nascimento && nascimento < '1900-01-01') {
-            mostrarMensagem('Data de nascimento inválida.', 'error');
-            return;
-        }
-
-        const dataCadastro = document.getElementById('data_cadastro_cliente').value;
-        if (document.getElementById('checkboxCliente').checked && dataCadastro > hojeLocal()) {
-            mostrarMensagem('A data de cadastro do cliente não pode ser no futuro.', 'error');
-            return;
-        }
-    }
-
-    let funcionario = null;
-    if (document.getElementById('checkboxFuncionario').checked) {
-        funcionario = {
-            cpf_pessoa: pessoa.cpf_pessoa,
-            salario_funcionario: document.getElementById('salario_funcionario').value,
-            cargo_id_cargo: parseInt(document.getElementById('cargo_id_cargo').value, 10)
-        };
-    }
-    const caminhoFunc = `${API_BASE_URL}/funcionario/${currentPersonId}`;
-
-    let cliente = null;
-    if (document.getElementById('checkboxCliente').checked) {
-        cliente = {
-            cpf_pessoa: pessoa.cpf_pessoa,
-            data_cadastro_cliente: document.getElementById('data_cadastro_cliente').value || null
-        };
-    }
-    const caminhoCliente = `${API_BASE_URL}/cliente/${currentPersonId}`;
+    btnSalvar.disabled = true;
 
     try {
-        let respPessoa = null;
-        switch (operacao) {
-            case 'incluir':
-                respPessoa = await fetch(`${API_BASE_URL}/pessoa`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(pessoa)
-                });
-                const dataPessoaInc = await respPessoa.json();
+        if (operacao === 'excluir') {
+            await excluirRelacionamentos();
+            await excluirPessoaDoBanco();
 
-                if (!dataPessoaInc.sucesso) {
-                    throw new Error('Erro ao criar pessoa: ' + (dataPessoaInc.mensagem || respPessoa.status));
-                }
+            mostrarMensagem('Pessoa excluída com sucesso!', 'success');
 
-if (funcionario) {
-    const respFuncionario = await fetch(`${API_BASE_URL}/funcionario`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(funcionario)
-    });
+            limparFormulario();
+            searchId.value = '';
+            currentPersonId = null;
 
-    const dataFuncionario = await respFuncionario.json().catch(() => ({}));
-
-    if (!respFuncionario.ok) {
-        throw new Error(
-            'Erro ao cadastrar funcionário: ' +
-            (dataFuncionario.mensagem || dataFuncionario.error || respFuncionario.status)
-        );
-    }
-}
-
-if (cliente) {
-    const respCliente = await fetch(`${API_BASE_URL}/cliente`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cliente)
-    });
-
-    const dataCliente = await respCliente.json().catch(() => ({}));
-
-    if (!respCliente.ok) {
-        throw new Error(
-            'Erro ao cadastrar cliente: ' +
-            (dataCliente.mensagem || dataCliente.error || respCliente.status)
-        );
-    }
-}
-
-                mostrarMensagem('Pessoa incluída com sucesso!', 'success');
-                limparFormulario();
-                carregarPessoas();
-                break;
-
-            case 'alterar':
-                respPessoa = await fetch(`${API_BASE_URL}/pessoa/${currentPersonId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(pessoa)
-                });
-                const dataPessoaAlt = await respPessoa.json();
-                if (!dataPessoaAlt.sucesso) {
-                    throw new Error('Erro ao alterar pessoa: ' + (dataPessoaAlt.mensagem || respPessoa.status));
-                }
-
-                // Trata Cliente
-                if (document.getElementById('checkboxCliente').checked) {
-                    const respVerifCli = await fetch(caminhoCliente);
-                    if (respVerifCli.status === 404) {
-                        await fetch(`${API_BASE_URL}/cliente`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(cliente)
-                        });
-                    } else {
-                        await fetch(caminhoCliente, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(cliente)
-                        });
-                    }
-                } else {
-                    try {
-                        const respCli = await fetch(caminhoCliente, { method: 'DELETE' });
-                        const dataCli = await respCli.json().catch(() => ({}));
-                        if (respCli.status === 409 || dataCli.sucesso === false) {
-                            alert(dataCli.mensagem || 'Não foi possível remover o cliente');
-                            document.getElementById('checkboxCliente').checked = true;
-                        }
-                    } catch (error) {
-                        console.error('Erro ao excluir cliente:', error);
-                    }
-                }
-
-                // Trata Funcionário
-                if (document.getElementById('checkboxFuncionario').checked) {
-                    const respVerifFunc = await fetch(caminhoFunc);
-                    const dataVerifFunc = await respVerifFunc.json().catch(() => ({}));
-
-                    if (respVerifFunc.status === 404 || !dataVerifFunc.sucesso) {
-                        await fetch(`${API_BASE_URL}/funcionario`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(funcionario)
-                        });
-                    } else {
-                        await fetch(caminhoFunc, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(funcionario)
-                        });
-                    }
-                } else {
-                    const respVerifFunc = await fetch(caminhoFunc);
-                    const dataVerifFunc = await respVerifFunc.json().catch(() => ({}));
-                    if (respVerifFunc.status === 200 && dataVerifFunc.sucesso) {
-                        await fetch(caminhoFunc, { method: 'DELETE' });
-                    }
-                }
-
-                mostrarMensagem('Pessoa alterada com sucesso!', 'success');
-                limparFormulario();
-                carregarPessoas();
-                break;
-
-            case 'excluir':
-                const respCliDel = await fetch(caminhoCliente);
-                if (respCliDel.status === 200) {
-                    await fetch(caminhoCliente, { method: 'DELETE' });
-                }
-
-                const respFuncDel = await fetch(caminhoFunc);
-                const dataFuncDel = await respFuncDel.json().catch(() => ({}));
-                if (respFuncDel.status === 200 && dataFuncDel.sucesso) {
-                    await fetch(caminhoFunc, { method: 'DELETE' });
-                }
-
-                const respDelPessoa = await fetch(`${API_BASE_URL}/pessoa/${currentPersonId}`, { method: 'DELETE' });
-                const dataDelPessoa = await respDelPessoa.json();
-
-                if (!dataDelPessoa.sucesso) {
-                    throw new Error('Erro ao excluir pessoa: ' + (dataDelPessoa.mensagem || respDelPessoa.status));
-                }
-
-                mostrarMensagem('Pessoa excluída com sucesso!', 'success');
-                limparFormulario();
-                carregarPessoas();
-                break;
+            await carregarPessoas();
+            return;
         }
+
+        const formData = new FormData(form);
+
+        const pessoa = {
+            cpf_pessoa: searchId.value.replace(/\D/g, ''),
+            nome_pessoa: formData.get('nome_pessoa')?.trim(),
+            data_nascimento_pessoa: converterDataParaISO(
+                formData.get('data_nascimento')
+            ),
+            genero_pessoa: formData.get('genero_pessoa'),
+            senha_pessoa: formData.get('senha_pessoa'),
+            email_pessoa: formData.get('email_pessoa')?.trim(),
+            telefone_pessoa: formData.get('telefone_pessoa')?.trim()
+        };
+
+        validarFormulario(pessoa);
+
+        const funcionario = checkboxFuncionario.checked
+            ? {
+                pessoa_cpf_pessoa: pessoa.cpf_pessoa,
+                salario_funcionario: Number(salarioInput.value),
+                cargo_id_cargo: Number(cargoSelect.value)
+            }
+            : null;
+
+        const cliente = checkboxCliente.checked
+            ? {
+                pessoa_cpf_pessoa: pessoa.cpf_pessoa,
+                data_cadastro_cliente: dataCadastroInput.value || null
+            }
+            : null;
+
+        if (operacao === 'incluir') {
+            await incluirPessoaNoBanco(pessoa);
+
+            if (funcionario) {
+                await criarRelacionamento('/funcionario', funcionario);
+            }
+
+            if (cliente) {
+                await criarRelacionamento('/cliente', cliente);
+            }
+
+            mostrarMensagem('Pessoa cadastrada com sucesso!', 'success');
+        }
+
+        if (operacao === 'alterar') {
+            await atualizarPessoaNoBanco(pessoa);
+
+            await atualizarRelacionamento(
+                'funcionario',
+                funcionario,
+                currentPersonId
+            );
+
+            await atualizarRelacionamento(
+                'cliente',
+                cliente,
+                currentPersonId
+            );
+
+            mostrarMensagem('Pessoa alterada com sucesso!', 'success');
+        }
+
+        limparFormulario();
+        searchId.value = '';
+        currentPersonId = null;
+
+        await carregarPessoas();
+
     } catch (error) {
-        console.error('Erro salvarOperacao:', error);
-        mostrarMensagem(error.message || 'Erro ao processar operação', 'error');
+        console.error('Erro ao salvar operação:', error);
+        mostrarMensagem(error.message || 'Erro ao processar operação.', 'error');
+
     } finally {
-        mostrarBotoes(true, false, false, false, false, false);
-        bloquearCampos(false);
-        document.getElementById('searchId').focus();
+        btnSalvar.disabled = false;
+
+        if (operacao !== null) {
+            mostrarBotoes(true, false, false, false, false, false);
+            bloquearCampos(false);
+            operacao = null;
+        }
     }
+}
+
+async function incluirPessoaNoBanco(pessoa) {
+    const response = await fetch(`${API_BASE_URL}/pessoa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pessoa)
+    });
+
+    await lerResposta(response);
+}
+
+async function atualizarPessoaNoBanco(pessoa) {
+    const response = await fetch(
+        `${API_BASE_URL}/pessoa/${encodeURIComponent(currentPersonId)}`,
+        {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pessoa)
+        }
+    );
+
+    await lerResposta(response);
+}
+
+async function criarRelacionamento(endpoint, dados) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+    });
+
+    await lerResposta(response);
+}
+
+async function atualizarRelacionamento(tipo, dados, pessoaId) {
+    const endpoint = `/${tipo}/${encodeURIComponent(pessoaId)}`;
+
+    const busca = await fetch(`${API_BASE_URL}${endpoint}`);
+
+    if (dados) {
+        if (busca.status === 404) {
+            await criarRelacionamento(`/${tipo}`, dados);
+            return;
+        }
+
+        await lerResposta(busca);
+
+        const resposta = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+
+        await lerResposta(resposta);
+
+    } else {
+        if (busca.status !== 404) {
+            await lerResposta(busca);
+
+            const resposta = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'DELETE'
+            });
+
+            await lerResposta(resposta);
+        }
+    }
+}
+
+async function excluirRelacionamentos() {
+    const tipos = ['cliente', 'funcionario'];
+
+    for (const tipo of tipos) {
+        const endpoint = `/${tipo}/${encodeURIComponent(currentPersonId)}`;
+        const busca = await fetch(`${API_BASE_URL}${endpoint}`);
+
+        if (busca.status === 404) {
+            continue;
+        }
+
+        await lerResposta(busca);
+
+        const resposta = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'DELETE'
+        });
+
+        await lerResposta(resposta);
+    }
+}
+
+async function excluirPessoaDoBanco() {
+    const response = await fetch(
+        `${API_BASE_URL}/pessoa/${encodeURIComponent(currentPersonId)}`,
+        { method: 'DELETE' }
+    );
+
+    await lerResposta(response);
 }
 
 function cancelarOperacao() {
     limparFormulario();
-    mostrarBotoes(true, false, false, false, false, false);
+
+    currentPersonId = null;
+    operacao = null;
+
+    searchId.value = '';
+
     bloquearCampos(false);
-    document.getElementById('searchId').focus();
-    mostrarMensagem('Operação cancelada', 'info');
+    mostrarBotoes(true, false, false, false, false, false);
+
+    mostrarMensagem('Operação cancelada.', 'info');
 }
 
 async function carregarPessoas() {
     try {
         const response = await fetch(`${API_BASE_URL}/pessoa`);
-        const data = await response.json();
+        const data = await lerResposta(response);
 
-        if (response.ok && data.sucesso) {
-            renderizarTabelaPessoas(data.pessoas);
-        } else {
-            throw new Error(data.mensagem || 'Erro ao carregar pessoas');
-        }
+        renderizarTabelaPessoas(data.pessoas || []);
+
     } catch (error) {
-        console.error('Erro:', error);
-        mostrarMensagem('Erro ao carregar lista de pessoas', 'error');
+        console.error('Erro ao carregar pessoas:', error);
+        mostrarMensagem(error.message || 'Erro ao carregar lista de pessoas.', 'error');
     }
 }
 
 function renderizarTabelaPessoas(pessoas) {
     pessoasTableBody.innerHTML = '';
 
+    if (!pessoas.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+
+        cell.colSpan = 6;
+        cell.textContent = 'Nenhuma pessoa cadastrada.';
+        row.appendChild(cell);
+        pessoasTableBody.appendChild(row);
+
+        return;
+    }
+
     pessoas.forEach(pessoa => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <button class="btn-id" onclick="selecionarPessoa(${pessoa.cpf_pessoa})">
-                    ${pessoa.cpf_pessoa}
-                </button>
-            </td>
-            <td>${pessoa.nome_pessoa}</td>
-            <td>${formatarData(pessoa.data_nascimento_pessoa)}</td>
-            <td>${pessoa.genero_pessoa}</td>
-            <td>${pessoa.senha_pessoa}</td>                           
-            <td>${pessoa.email_pessoa}</td>
-            <td>${pessoa.telefone_pessoa}</td>
-        `;
+
+        const cpfCell = document.createElement('td');
+        const cpfButton = document.createElement('button');
+
+        cpfButton.type = 'button';
+        cpfButton.className = 'btn-id';
+        cpfButton.textContent = pessoa.cpf_pessoa;
+        cpfButton.addEventListener('click', () => selecionarPessoa(pessoa.cpf_pessoa));
+
+        cpfCell.appendChild(cpfButton);
+        row.appendChild(cpfCell);
+
+        const valores = [
+            pessoa.nome_pessoa,
+            formatarData(pessoa.data_nascimento_pessoa),
+            pessoa.genero_pessoa,
+            pessoa.email_pessoa,
+            pessoa.telefone_pessoa
+        ];
+
+        valores.forEach(valor => {
+            const cell = document.createElement('td');
+            cell.textContent = valor || '';
+            row.appendChild(cell);
+        });
+
         pessoasTableBody.appendChild(row);
     });
 }
@@ -498,30 +647,26 @@ async function selecionarPessoa(id) {
     await buscarPessoa();
 }
 
-// Busca os cargos no backend e preenche o select
 async function popularCargosSelect() {
-    const selectCargo = document.getElementById('cargo_id_cargo');
-    selectCargo.innerHTML = '<option value="">Cargo</option>';
+    cargoSelect.innerHTML = '<option value="">Cargo</option>';
 
     try {
         const response = await fetch(`${API_BASE_URL}/cargo/listar`);
-        const data = await response.json();
+        const data = await lerResposta(response);
 
-        if (data.sucesso && Array.isArray(data.cargos)) {
+        if (Array.isArray(data.cargos)) {
             data.cargos.forEach(cargo => {
                 const option = document.createElement('option');
+
                 option.value = cargo.id_cargo;
                 option.textContent = cargo.nome_cargo;
-                selectCargo.appendChild(option);
+
+                cargoSelect.appendChild(option);
             });
-        } else {
-            console.error('Erro ao listar cargos:', data.mensagem);
         }
+
     } catch (error) {
-        console.error('Falha ao popular o menu de cargos:', error);
-        const optionErro = document.createElement('option');
-        optionErro.textContent = 'Erro ao carregar cargos';
-        optionErro.disabled = true;
-        selectCargo.appendChild(optionErro);
+        console.error('Erro ao carregar cargos:', error);
+        mostrarMensagem('Não foi possível carregar os cargos.', 'error');
     }
 }

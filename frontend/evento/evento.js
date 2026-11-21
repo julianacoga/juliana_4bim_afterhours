@@ -1,387 +1,441 @@
 
 const URL_API = 'http://localhost:3001';
 
-let modoEdicao = false;
+const SILHUETA_URL = `${URL_API}/imagens/silhueta.png`;
 
+let oQueEstaFazendo = '';
 
-// INICIALIZAR
+let evento = null;
+
+bloquearAtributos(true);
+
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+
 async function inicializar() {
-    bloquearCampos();
+    await carregarCategoria();
     await listar();
 }
 
+// ==========================================
+// CARREGAR CATEGORIAS
+// ==========================================
 
-// CAMPOS DO FORMULÁRIO
-function bloquearCampos() {
-    document.getElementById('inputTitulo_evento').disabled = true;
-    document.getElementById('inputDescricao_evento').disabled = true;
-    document.getElementById('inputLocal_evento').disabled = true;
-    document.getElementById('inputEndereco_evento').disabled = true;
-    document.getElementById('inputData_evento').disabled = true;
-    document.getElementById('inputHorario_evento').disabled = true;
-    document.getElementById('inputImagem_evento').disabled = true;
-    document.getElementById('selectStatus_evento').disabled = true;
-    document.getElementById('inputCpf_funcionario').disabled = true;
+async function carregarCategoria() {
+    const select = document.getElementById("selectId_categoria");
+
+    try {
+        const resposta = await fetch(`${URL_API}/categoria/listar`);
+        const data = await resposta.json();
+
+        if (data.sucesso) {
+            select.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
+
+            data.categorias.forEach(c => {
+                select.innerHTML += `
+                    <option value="${c.id_categoria}">
+                        ${c.id_categoria} - ${c.nome_categoria}
+                    </option>
+                `;
+            });
+
+            select.disabled = true;
+        } else {
+            select.innerHTML = '<option value="">Erro ao carregar categorias</option>';
+        }
+
+    } catch (erro) {
+        console.error("Erro ao carregar categorias:", erro);
+        select.innerHTML = '<option value="">Erro ao carregar categorias</option>';
+    }
 }
 
-function liberarCampos() {
-    document.getElementById('inputTitulo_evento').disabled = false;
-    document.getElementById('inputDescricao_evento').disabled = false;
-    document.getElementById('inputLocal_evento').disabled = false;
-    document.getElementById('inputEndereco_evento').disabled = false;
-    document.getElementById('inputData_evento').disabled = false;
-    document.getElementById('inputHorario_evento').disabled = false;
-    document.getElementById('inputImagem_evento').disabled = false;
-    document.getElementById('selectStatus_evento').disabled = false;
-    document.getElementById('inputCpf_funcionario').disabled = false;
-}
+// ==========================================
+// CARREGAR IMAGEM
+// ==========================================
 
+function carregarImagem(id) {
+    const img = document.getElementById('imgevento');
 
-// CONTROLE DOS BOTÕES
-function esconderBotoes() {
-    document.getElementById('btInserir').style.display = 'none';
-    document.getElementById('btAlterar').style.display = 'none';
-    document.getElementById('btExcluir').style.display = 'none';
-    document.getElementById('btSalvar').style.display = 'none';
-    document.getElementById('btCancelar').style.display = 'none';
-    document.getElementById('btProcure').style.display = 'inline-block';
-}
+    if (!id) {
+        img.src = SILHUETA_URL;
+        return;
+    }
 
-function limparCampos() {
-    document.getElementById('inputTitulo_evento').value = '';
-    document.getElementById('inputDescricao_evento').value = '';
-    document.getElementById('inputLocal_evento').value = '';
-    document.getElementById('inputEndereco_evento').value = '';
-    document.getElementById('inputData_evento').value = '';
-    document.getElementById('inputHorario_evento').value = '';
-    document.getElementById('inputImagem_evento').value = '';
-    document.getElementById('selectStatus_evento').value = 'Ativo';
-    document.getElementById('inputCpf_funcionario').value = '';
-}
+    img.src = `${URL_API}/imagens/${id}.png`;
 
-
-// AVISOS
-function mostrarAviso(mensagem) {
-    document.getElementById('divAviso').textContent = mensagem;
-}
-
-
-// DADOS DO FORMULÁRIO
-function obterDados() {
-    return {
-        titulo_evento: document.getElementById('inputTitulo_evento').value.trim(),
-        descricao_evento: document.getElementById('inputDescricao_evento').value.trim(),
-        local_evento: document.getElementById('inputLocal_evento').value.trim(),
-        endereco_evento: document.getElementById('inputEndereco_evento').value.trim(),
-        data_evento: document.getElementById('inputData_evento').value,
-        horario_evento: document.getElementById('inputHorario_evento').value,
-        imagem_evento: document.getElementById('inputImagem_evento').value.trim(),
-        status_evento: document.getElementById('selectStatus_evento').value,
-        funcionario_pessoa_cpf_pessoa:
-            document.getElementById('inputCpf_funcionario').value
+    img.onerror = () => {
+        img.src = SILHUETA_URL;
     };
 }
 
+// ==========================================
+// UPLOAD E PRÉ-VISUALIZAÇÃO
+// ==========================================
 
-function validarDados(dados) {
-    if (
-        !dados.titulo_evento ||
-        !dados.local_evento ||
-        !dados.data_evento ||
-        !dados.horario_evento ||
-        !dados.funcionario_pessoa_cpf_pessoa
-    ) {
-        mostrarAviso('Preencha todos os campos obrigatórios.');
-        return false;
+function acionarUpload() {
+    if (oQueEstaFazendo !== 'inserindo' &&
+        oQueEstaFazendo !== 'alterando') {
+
+        mostrarAviso("Clique em Inserir ou Alterar primeiro para escolher uma imagem.");
+        return;
     }
 
-    if (
-        !Number.isSafeInteger(Number(dados.funcionario_pessoa_cpf_pessoa)) ||
-        Number(dados.funcionario_pessoa_cpf_pessoa) <= 0
-    ) {
-        mostrarAviso('Informe um CPF válido para o funcionário.');
-        return false;
-    }
-
-    return true;
+    document.getElementById('inputImagem').click();
 }
 
+function previewImagem() {
+    const inputFiles = document.getElementById('inputImagem').files;
 
+    if (inputFiles.length > 0) {
+        const url = URL.createObjectURL(inputFiles[0]);
+
+        document.getElementById('imgevento').src = url;
+
+        mostrarAviso("Imagem escolhida! Clique em Salvar para concluir.");
+    }
+}
+
+async function uploadImagemParaServidor(id) {
+    const inputFiles = document.getElementById('inputImagem').files;
+
+    if (inputFiles.length === 0) return;
+
+    const formData = new FormData();
+
+    formData.append('imagem', inputFiles[0]);
+
+    const resposta = await fetch(`${URL_API}/evento/upload/${id}`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await resposta.json();
+
+    if (!resposta.ok || !data.sucesso) {
+        throw new Error(data.mensagem || "Erro ao enviar imagem.");
+    }
+}
+
+// ==========================================
 // PROCURAR EVENTO
+// ==========================================
+
+async function procurePorChavePrimaria(chave) {
+    try {
+        const resposta = await fetch(`${URL_API}/evento/${chave}`);
+        const data = await resposta.json();
+
+        return data.sucesso ? data.evento : null;
+
+    } catch (erro) {
+        console.error("Erro ao procurar evento:", erro);
+        return null;
+    }
+}
+
 async function procure() {
-    const id = document.getElementById('inputId_evento').value;
+    const id_evento = document.getElementById("inputId_evento").value;
 
-    if (!id || Number(id) <= 0) {
-        mostrarAviso('Informe um ID válido.');
+    if (id_evento === "" ||
+        isNaN(id_evento) ||
+        !Number.isInteger(Number(id_evento)) ||
+        Number(id_evento) <= 0) {
+
+        mostrarAviso("Informe um ID válido.");
         return;
     }
 
-    try {
-        const resposta = await fetch(`${URL_API}/evento/${id}`);
-        const resultado = await resposta.json();
+    evento = await procurePorChavePrimaria(id_evento);
 
-        limparCampos();
-        esconderBotoes();
+    oQueEstaFazendo = '';
 
-        if (resposta.ok && resultado.sucesso) {
-            const evento = resultado.evento;
+    if (evento) {
+        mostrarDadosEvento(evento);
 
-            document.getElementById('inputTitulo_evento').value =
-                evento.titulo_evento || '';
+        carregarImagem(evento.imagem_evento);
 
-            document.getElementById('inputDescricao_evento').value =
-                evento.descricao_evento || '';
+        visibilidadeDosBotoes('inline', 'none', 'inline', 'inline', 'none');
 
-            document.getElementById('inputLocal_evento').value =
-                evento.local_evento || '';
+        mostrarAviso("Evento encontrado! Você pode alterar ou excluir.");
 
-            document.getElementById('inputEndereco_evento').value =
-                evento.endereco_evento || '';
+    } else {
+        limparAtributos();
 
-            document.getElementById('inputData_evento').value =
-                String(evento.data_evento).substring(0, 10);
+        carregarImagem(null);
 
-            document.getElementById('inputHorario_evento').value =
-                String(evento.horario_evento).substring(0, 5);
+        visibilidadeDosBotoes('inline', 'inline', 'none', 'none', 'none');
 
-            document.getElementById('inputImagem_evento').value =
-                evento.imagem_evento || '';
-
-            document.getElementById('selectStatus_evento').value =
-                evento.status_evento || 'Ativo';
-
-            document.getElementById('inputCpf_funcionario').value =
-                evento.funcionario_pessoa_cpf_pessoa;
-
-            bloquearCampos();
-
-            document.getElementById('btAlterar').style.display = 'inline-block';
-            document.getElementById('btExcluir').style.display = 'inline-block';
-
-            mostrarAviso('Evento encontrado!');
-
-        } else {
-            bloquearCampos();
-            liberarCampos();
-
-            document.getElementById('btInserir').style.display = 'inline-block';
-            document.getElementById('btCancelar').style.display = 'inline-block';
-
-            mostrarAviso('Evento não encontrado. Você pode cadastrar um novo.');
-        }
-
-    } catch (erro) {
-        console.error('Erro ao procurar evento:', erro);
-        mostrarAviso('Não foi possível consultar o evento.');
+        mostrarAviso("Evento não encontrado. Você pode inserir.");
     }
 }
 
+// ==========================================
+// OPERAÇÕES
+// ==========================================
 
-// INSERIR EVENTO
-async function inserir() {
-    const dados = obterDados();
+function inserir() {
+    bloquearAtributos(false);
 
-    if (!validarDados(dados)) return;
+    visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
 
-    try {
-        const resposta = await fetch(`${URL_API}/evento`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
-        });
+    oQueEstaFazendo = 'inserindo';
 
-        const resultado = await resposta.json();
-
-        if (!resposta.ok || !resultado.sucesso) {
-            throw new Error(resultado.mensagem || 'Erro ao cadastrar evento.');
-        }
-
-        document.getElementById('inputId_evento').value =
-            resultado.evento.id_evento;
-
-        mostrarAviso(resultado.mensagem);
-
-        bloquearCampos();
-        esconderBotoes();
-
-        document.getElementById('btAlterar').style.display = 'inline-block';
-        document.getElementById('btExcluir').style.display = 'inline-block';
-
-        await listar();
-
-    } catch (erro) {
-        console.error('Erro ao inserir evento:', erro);
-        mostrarAviso(erro.message);
-    }
+    mostrarAviso("INSERINDO - Preencha os dados, escolha a imagem e clique em salvar.");
 }
 
-
-// ENTRAR NO MODO DE ALTERAÇÃO
 function alterar() {
-    modoEdicao = true;
+    bloquearAtributos(false);
 
-    liberarCampos();
+    visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
 
-    document.getElementById('btAlterar').style.display = 'none';
-    document.getElementById('btExcluir').style.display = 'none';
-    document.getElementById('btProcure').style.display = 'none';
+    oQueEstaFazendo = 'alterando';
 
-    document.getElementById('btSalvar').style.display = 'inline-block';
-    document.getElementById('btCancelar').style.display = 'inline-block';
-
-    mostrarAviso('Altere os dados do evento e clique em Salvar.');
+    mostrarAviso("ALTERANDO - Modifique os dados e clique em salvar.");
 }
 
+function excluir() {
+    bloquearAtributos(true);
 
-// SALVAR ALTERAÇÃO
+    visibilidadeDosBotoes('none', 'none', 'none', 'none', 'inline');
+
+    oQueEstaFazendo = 'excluindo';
+
+    mostrarAviso("EXCLUINDO - Clique em salvar para confirmar a exclusão.");
+}
+
+// ==========================================
+// SALVAR
+// ==========================================
+
 async function salvar() {
-    const id = document.getElementById('inputId_evento').value;
-    const dados = obterDados();
 
-    if (!id) {
-        mostrarAviso('Informe o ID do evento.');
-        return;
-    }
+    const id_evento = document.getElementById("inputId_evento").value;
 
-    if (!validarDados(dados)) return;
+    const titulo_evento = document.getElementById("inputTitulo_evento").value;
+    const descricao_evento = document.getElementById("inputDescricao_evento").value;
+    const local_evento = document.getElementById("inputLocal_evento").value;
+    const endereco_evento = document.getElementById("inputEndereco_evento").value;
+    const data_evento = document.getElementById("inputData_evento").value;
+    const horario_evento = document.getElementById("inputHorario_evento").value;
+    const status_evento = document.getElementById("selectStatus_evento").value;
+    const categoria_id_categoria = document.getElementById("selectId_categoria").value;
+    const funcionario_pessoa_cpf_pessoa = document.getElementById("inputFuncionario_evento").value;
 
-    try {
-        const resposta = await fetch(`${URL_API}/evento/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
-        });
+    const dadosEvento = {
+        titulo_evento,
+        descricao_evento,
+        local_evento,
+        endereco_evento,
+        data_evento,
+        horario_evento,
+        status_evento,
+        categoria_id_categoria,
+        funcionario_pessoa_cpf_pessoa
+    };
 
-        const resultado = await resposta.json();
+    if (oQueEstaFazendo !== 'excluindo') {
 
-        if (!resposta.ok || !resultado.sucesso) {
-            throw new Error(resultado.mensagem || 'Erro ao alterar evento.');
+        if (!titulo_evento || !local_evento || !data_evento ||
+            !horario_evento || !categoria_id_categoria ||
+            !funcionario_pessoa_cpf_pessoa) {
+
+            mostrarAviso("Preencha os campos obrigatórios.");
+            return;
         }
-
-        modoEdicao = false;
-
-        bloquearCampos();
-        esconderBotoes();
-
-        document.getElementById('btAlterar').style.display = 'inline-block';
-        document.getElementById('btExcluir').style.display = 'inline-block';
-
-        mostrarAviso(resultado.mensagem);
-
-        await listar();
-
-    } catch (erro) {
-        console.error('Erro ao salvar evento:', erro);
-        mostrarAviso(erro.message);
-    }
-}
-
-
-// EXCLUIR EVENTO
-async function excluir() {
-    const id = document.getElementById('inputId_evento').value;
-
-    if (!id) {
-        mostrarAviso('Informe o ID do evento.');
-        return;
-    }
-
-    if (!confirm('Tem certeza que deseja excluir este evento?')) {
-        return;
     }
 
     try {
-        const resposta = await fetch(`${URL_API}/evento/${id}`, {
-            method: 'DELETE'
-        });
 
-        const resultado = await resposta.json();
+        if (oQueEstaFazendo === 'inserindo') {
 
-        if (!resposta.ok || !resultado.sucesso) {
-            throw new Error(resultado.mensagem || 'Erro ao excluir evento.');
+            const resposta = await fetch(`${URL_API}/evento`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosEvento)
+            });
+
+            const data = await resposta.json();
+
+            if (!resposta.ok || !data.sucesso) {
+                throw new Error(data.mensagem || "Erro ao inserir evento.");
+            }
+
+            const idCriado = data.evento.id_evento;
+
+            await uploadImagemParaServidor(idCriado);
+
+            mostrarAviso("Evento inserido com sucesso!");
+
+        } else if (oQueEstaFazendo === 'alterando') {
+
+            const resposta = await fetch(`${URL_API}/evento/${id_evento}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosEvento)
+            });
+
+            const data = await resposta.json();
+
+            if (!resposta.ok || !data.sucesso) {
+                throw new Error(data.mensagem || "Erro ao alterar evento.");
+            }
+
+            await uploadImagemParaServidor(id_evento);
+
+            mostrarAviso("Evento alterado com sucesso!");
+
+        } else if (oQueEstaFazendo === 'excluindo') {
+
+            const resposta = await fetch(`${URL_API}/evento/${id_evento}`, {
+                method: 'DELETE'
+            });
+
+            const data = await resposta.json();
+            
+            if (!resposta.ok || !data.sucesso) {
+                throw new Error(data.mensagem || "Erro ao excluir evento.");
+            }
+            carregarImagem(null);
+            mostrarAviso("Evento excluído com sucesso!");
         }
 
-        cancelarOperacao();
-        mostrarAviso(resultado.mensagem);
-
+        visibilidadeDosBotoes('inline', 'none', 'none', 'none', 'none');
+        limparAtributos();
+        document.getElementById("inputId_evento").value = "";
         await listar();
-
     } catch (erro) {
-        console.error('Erro ao excluir evento:', erro);
-        mostrarAviso(erro.message);
+        console.error("Erro ao salvar:", erro);
+        mostrarAviso(erro.message || "Erro ao efetuar operação no servidor.");
     }
 }
 
-
-// CANCELAR OPERAÇÃO
-function cancelarOperacao() {
-    modoEdicao = false;
-
-    document.getElementById('inputId_evento').value = '';
-
-    limparCampos();
-    bloquearCampos();
-    esconderBotoes();
-
-    mostrarAviso('Informe o ID do evento e clique em Procure.');
-}
-
-
+// ==========================================
 // LISTAR EVENTOS
+// ==========================================
+
 async function listar() {
     try {
         const resposta = await fetch(`${URL_API}/evento/listar`);
-        const resultado = await resposta.json();
+        const data = await resposta.json();
 
-        if (!resposta.ok || !resultado.sucesso) {
-            throw new Error(resultado.mensagem || 'Erro ao listar eventos.');
+        if (!data.sucesso) {
+            throw new Error("Erro ao listar eventos.");
         }
 
-        const saida = document.getElementById('outputSaida');
-        saida.innerHTML = '';
+        let texto = "";
 
-        if (resultado.eventos.length === 0) {
-            saida.textContent = 'Nenhum evento cadastrado.';
-            return;
+        for (let linha of data.eventos) {
+
+            texto += `
+                ${linha.id_evento} -
+                ${linha.titulo_evento} -
+                ${linha.nome_categoria || 'Sem categoria'} -
+                ${linha.local_evento} -
+                ${linha.data_evento} -
+                ${linha.status_evento}
+                <br>
+            `;
         }
 
-        resultado.eventos.forEach(evento => {
-            const item = document.createElement('div');
-            item.className = 'item-evento';
-
-            const titulo = document.createElement('strong');
-            titulo.textContent = evento.titulo_evento;
-
-            const local = document.createElement('p');
-            local.textContent = `Local: ${evento.local_evento}`;
-
-            const data = document.createElement('p');
-            const dataEvento = String(evento.data_evento).substring(0, 10);
-            const partesData = dataEvento.split('-');
-            data.textContent =
-                `Data: ${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-
-            const horario = document.createElement('p');
-            horario.textContent =
-                `Horário: ${String(evento.horario_evento).substring(0, 5)}`;
-
-            const status = document.createElement('p');
-            status.textContent = `Status: ${evento.status_evento}`;
-
-            const id = document.createElement('p');
-            id.textContent = `ID: ${evento.id_evento}`;
-
-            item.append(titulo, local, data, horario, status, id);
-            saida.appendChild(item);
-        });
+        document.getElementById("outputSaida").innerHTML =
+            texto || "Nenhum evento cadastrado.";
 
     } catch (erro) {
-        console.error('Erro ao listar eventos:', erro);
-        document.getElementById('outputSaida').textContent =
-            'Erro ao carregar eventos.';
+        console.error("Erro ao listar eventos:", erro);
+
+        document.getElementById("outputSaida").innerHTML =
+            "Servidor offline ou erro ao carregar eventos.";
     }
+}
+
+// ==========================================
+// CANCELAR OPERAÇÃO
+// ==========================================
+
+function cancelarOperacao() {
+    limparAtributos();
+    carregarImagem(null);
+    bloquearAtributos(true);
+    visibilidadeDosBotoes('inline', 'none', 'none', 'none', 'none');
+    document.getElementById("inputId_evento").value = "";
+    mostrarAviso("Operação cancelada.");
+}
+
+// ==========================================
+// EXIBIR DADOS
+// ==========================================
+
+function mostrarAviso(mensagem) {
+    document.getElementById("divAviso").innerHTML = mensagem;
+}
+
+function mostrarDadosEvento(e) {
+    document.getElementById("inputId_evento").value = e.id_evento;
+    document.getElementById("inputTitulo_evento").value = e.titulo_evento || "";
+    document.getElementById("inputDescricao_evento").value = e.descricao_evento || "";
+    document.getElementById("inputLocal_evento").value = e.local_evento || "";
+    document.getElementById("inputEndereco_evento").value = e.endereco_evento || "";
+    document.getElementById("inputData_evento").value = e.data_evento ? String(e.data_evento).substring(0, 10) : "";
+    document.getElementById("inputHorario_evento").value = e.horario_evento ? String(e.horario_evento).substring(0, 5) : "";
+    document.getElementById("selectStatus_evento").value = e.status_evento || "Ativo";
+    document.getElementById("selectId_categoria").value = e.categoria_id_categoria || "";
+    document.getElementById("inputFuncionario_evento").value = e.funcionario_pessoa_cpf_pessoa || "";
+    bloquearAtributos(true);
+}
+
+// ==========================================
+// LIMPAR CAMPOS
+// ==========================================
+
+function limparAtributos() {
+    evento = null;
+    oQueEstaFazendo = '';
+    
+    document.getElementById("inputTitulo_evento").value = "";
+    document.getElementById("inputDescricao_evento").value = "";
+    document.getElementById("inputLocal_evento").value = "";
+    document.getElementById("inputEndereco_evento").value = "";
+    document.getElementById("inputData_evento").value = "";
+    document.getElementById("inputHorario_evento").value = "";
+    document.getElementById("selectStatus_evento").value = "Ativo";
+    document.getElementById("selectId_categoria").value = "";
+    document.getElementById("inputFuncionario_evento").value = "";
+    document.getElementById("inputImagem").value = "";
+    bloquearAtributos(true);
+}
+
+// ==========================================
+// BLOQUEAR CAMPOS
+// ==========================================
+
+function bloquearAtributos(soLeitura) {
+    document.getElementById("inputId_evento").readOnly = !soLeitura;
+    document.getElementById("inputTitulo_evento").readOnly = soLeitura;
+    document.getElementById("inputDescricao_evento").readOnly = soLeitura;
+    document.getElementById("inputLocal_evento").readOnly = soLeitura;
+    document.getElementById("inputEndereco_evento").readOnly = soLeitura;
+    document.getElementById("inputData_evento").readOnly = soLeitura;
+    document.getElementById("inputHorario_evento").readOnly = soLeitura;
+    document.getElementById("selectStatus_evento").disabled = soLeitura;
+    document.getElementById("selectId_categoria").disabled = soLeitura;
+    document.getElementById("inputFuncionario_evento").readOnly = soLeitura;
+}
+
+// ==========================================
+// VISIBILIDADE DOS BOTÕES
+// ==========================================
+
+function visibilidadeDosBotoes(btP, btI, btA, btE, btS) {
+    document.getElementById("btProcure").style.display = btP;
+    document.getElementById("btInserir").style.display = btI;
+    document.getElementById("btAlterar").style.display = btA;
+    document.getElementById("btExcluir").style.display = btE;
+    document.getElementById("btSalvar").style.display = btS;
+    document.getElementById("btCancelar").style.display = btS;
 }

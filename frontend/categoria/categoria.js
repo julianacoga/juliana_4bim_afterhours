@@ -1,3 +1,4 @@
+
 const URL_API = 'http://localhost:3001';
 
 let oQueEstaFazendo = '';
@@ -13,6 +14,7 @@ async function procurePorChavePrimaria(chave) {
         return data.sucesso ? data.categoria : null;
 
     } catch (erro) {
+        console.error('Erro ao procurar categoria:', erro);
         return null;
     }
 }
@@ -34,7 +36,6 @@ async function procure() {
     oQueEstaFazendo = '';
 
     if (categoria) {
-
         mostrarDadosCategoria(categoria);
 
         visibilidadeDosBotoes(
@@ -45,10 +46,9 @@ async function procure() {
             'none'
         );
 
-        mostrarAviso("Achou no banco, pode alterar ou excluir");
+        mostrarAviso("Categoria encontrada! Você pode alterar ou excluir.");
 
     } else {
-
         limparAtributos();
 
         document.getElementById("inputId_categoria").value = id_categoria;
@@ -61,13 +61,17 @@ async function procure() {
             'none'
         );
 
-        mostrarAviso("Não achou no banco, pode inserir");
+        mostrarAviso("Categoria não encontrada. Você pode inserir uma nova.");
     }
 }
 
 function inserir() {
+    limparAtributos();
 
     bloquearAtributos(false);
+
+    // O ID será gerado automaticamente pelo banco
+    document.getElementById("inputId_categoria").value = "";
 
     visibilidadeDosBotoes(
         'none',
@@ -80,13 +84,15 @@ function inserir() {
     oQueEstaFazendo = 'inserindo';
 
     mostrarAviso(
-        "INSERINDO - Digite o nome e a descrição da categoria e clique em salvar"
+        "INSERINDO - Digite o nome da categoria e clique em Salvar."
     );
 }
 
 function alterar() {
-
     bloquearAtributos(false);
+
+    // O ID não pode ser alterado
+    document.getElementById("inputId_categoria").readOnly = true;
 
     visibilidadeDosBotoes(
         'none',
@@ -99,12 +105,11 @@ function alterar() {
     oQueEstaFazendo = 'alterando';
 
     mostrarAviso(
-        "ALTERANDO - Digite o novo nome e a descrição e clique em salvar"
+        "ALTERANDO - Digite o novo nome da categoria e clique em Salvar."
     );
 }
 
 function excluir() {
-
     bloquearAtributos(true);
 
     visibilidadeDosBotoes(
@@ -118,30 +123,30 @@ function excluir() {
     oQueEstaFazendo = 'excluindo';
 
     mostrarAviso(
-        "EXCLUINDO - Clique em salvar para confirmar a exclusão"
+        "EXCLUINDO - Clique em Salvar para confirmar a exclusão."
     );
 }
 
 async function salvar() {
-
     const id_categoria = parseInt(
         document.getElementById("inputId_categoria").value
     );
 
-    const nome_categoria =
-        document.getElementById("inputNome_categoria").value;
+    const nome_categoria = document
+        .getElementById("inputNome_categoria")
+        .value.trim();
 
-    const descricao =
-        document.getElementById("inputDescricao_categoria").value;
+    if (oQueEstaFazendo !== 'excluindo' && nome_categoria === '') {
+        mostrarAviso("Informe o nome da categoria.");
+        return;
+    }
 
+    // Na inserção, não enviamos ID: o banco gera automaticamente
     const dadoscategoria = {
-        id_categoria,
-        nome_categoria,
-        descricao
+        nome_categoria
     };
 
     try {
-
         if (oQueEstaFazendo === 'inserindo') {
 
             const resp = await fetch(`${URL_API}/categoria`, {
@@ -154,12 +159,13 @@ async function salvar() {
 
             const data = await resp.json();
 
-            if (!data.sucesso) {
-                return mostrarAviso(data.mensagem);
+            if (!resp.ok || !data.sucesso) {
+                mostrarAviso(data.mensagem || "Erro ao inserir categoria.");
+                return;
             }
 
             mostrarAviso(
-                "Inserido no Banco de Dados com sucesso!"
+                `Categoria cadastrada com sucesso! ID: ${data.categoria.id_categoria}`
             );
 
         } else if (oQueEstaFazendo === 'alterando') {
@@ -174,13 +180,12 @@ async function salvar() {
 
             const data = await resp.json();
 
-            if (!data.sucesso) {
-                return mostrarAviso(data.mensagem);
+            if (!resp.ok || !data.sucesso) {
+                mostrarAviso(data.mensagem || "Erro ao alterar categoria.");
+                return;
             }
 
-            mostrarAviso(
-                "Alterado no Banco de Dados com sucesso!"
-            );
+            mostrarAviso("Categoria alterada com sucesso!");
 
         } else if (oQueEstaFazendo === 'excluindo') {
 
@@ -193,34 +198,35 @@ async function salvar() {
 
             const data = await resposta.json();
 
-            if (!data.sucesso) {
+            if (!resposta.ok || !data.sucesso) {
                 mostrarAviso(
-                    data.mensagem || "Erro ao excluir no servidor."
+                    data.mensagem || "Erro ao excluir categoria."
                 );
                 return;
             }
 
-            mostrarAviso(
-                "Excluído do Banco de Dados!"
-            );
+            mostrarAviso("Categoria excluída com sucesso!");
         }
-
-        visibilidadeDosBotoes(
-            'inline',
-            'none',
-            'none',
-            'none',
-            'none'
-        );
 
         limparAtributos();
 
         document.getElementById("inputId_categoria").value = "";
 
+        bloquearAtributos(true);
+
+        visibilidadeDosBotoes(
+            'inline',
+            'inline',
+            'none',
+            'none',
+            'none'
+        );
+
         listar();
 
-    } catch (erro) {
+        oQueEstaFazendo = '';
 
+    } catch (erro) {
         console.error("Erro ao efetuar operação:", erro);
 
         mostrarAviso(
@@ -230,7 +236,6 @@ async function salvar() {
 }
 
 async function listar() {
-
     try {
         const resposta = await fetch(
             `${URL_API}/categoria/listar`
@@ -240,16 +245,17 @@ async function listar() {
 
         if (data.sucesso) {
             let texto = "";
+
             for (let linha of data.categorias) {
                 texto += `
                     <b>[${linha.id_categoria}]</b> -
-                    ${linha.nome_categoria}<br>
-                    ${linha.descricao || ''}<br><br>
+                    ${linha.nome_categoria}<br><br>
                 `;
             }
 
             document.getElementById("outputSaida").innerHTML =
                 texto || "Nenhuma categoria cadastrada.";
+
         } else {
             document.getElementById("outputSaida").innerHTML =
                 `Erro no banco: ${data.mensagem}`;
@@ -257,6 +263,7 @@ async function listar() {
 
     } catch (erro) {
         console.error("Erro ao listar:", erro);
+
         document.getElementById("outputSaida").innerHTML =
             "Servidor offline ou erro de conexão (CORS).";
     }
@@ -264,15 +271,18 @@ async function listar() {
 
 function cancelarOperacao() {
     limparAtributos();
+
     bloquearAtributos(true);
+
     visibilidadeDosBotoes(
         'inline',
-        'none',
+        'inline',
         'none',
         'none',
         'none'
     );
-    mostrarAviso("Cancelou a operação");
+
+    mostrarAviso("Operação cancelada.");
 }
 
 function mostrarAviso(mensagem) {
@@ -282,28 +292,27 @@ function mostrarAviso(mensagem) {
 function mostrarDadosCategoria(c) {
     document.getElementById("inputId_categoria").value =
         c.id_categoria;
+
     document.getElementById("inputNome_categoria").value =
         c.nome_categoria;
-    document.getElementById("inputDescricao_categoria").value =
-        c.descricao || "";
+
     bloquearAtributos(true);
 }
 
 function limparAtributos() {
     categoria = null;
     oQueEstaFazendo = '';
+
     document.getElementById("inputNome_categoria").value = "";
-    document.getElementById("inputDescricao_categoria").value = "";
+
     bloquearAtributos(true);
 }
 
 function bloquearAtributos(soLeitura) {
-
     document.getElementById("inputId_categoria").readOnly =
         !soLeitura;
+
     document.getElementById("inputNome_categoria").readOnly =
-        soLeitura;
-    document.getElementById("inputDescricao_categoria").readOnly =
         soLeitura;
 }
 
@@ -314,7 +323,6 @@ function visibilidadeDosBotoes(
     btE,
     btS
 ) {
-
     document.getElementById("btProcure").style.display = btP;
     document.getElementById("btInserir").style.display = btI;
     document.getElementById("btAlterar").style.display = btA;
