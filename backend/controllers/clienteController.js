@@ -213,3 +213,154 @@ exports.deletarCliente = async (req, res) => {
         });
     }
 };
+
+// BUSCAR DADOS DO CLIENTE LOGADO
+exports.obterMeuPerfil = async (req, res) => {
+    try {
+        const usuario = req.session?.usuario;
+
+        if (!usuario?.cpf_pessoa || usuario.ehCliente !== true) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: 'Faça login como cliente para acessar seu perfil.'
+            });
+        }
+
+        const resultado = await query(
+            `SELECT
+                p.cpf_pessoa,
+                p.nome_pessoa,
+                p.data_nascimento_pessoa,
+                p.genero_pessoa,
+                p.email_pessoa,
+                p.telefone_pessoa,
+                c.data_cadastro_cliente
+             FROM pessoa p
+             INNER JOIN cliente c
+                ON c.pessoa_cpf_pessoa = p.cpf_pessoa
+             WHERE p.cpf_pessoa = $1`,
+            [usuario.cpf_pessoa]
+        );
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Cliente não encontrado.'
+            });
+        }
+
+        return res.json({
+            sucesso: true,
+            cliente: resultado.rows[0]
+        });
+
+    } catch (erro) {
+        console.error('Erro ao buscar meu perfil:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao buscar perfil.'
+        });
+    }
+};
+
+// ATUALIZAR DADOS DO CLIENTE LOGADO
+exports.atualizarMeuPerfil = async (req, res) => {
+    try {
+        const usuario = req.session?.usuario;
+
+        if (!usuario?.cpf_pessoa || usuario.ehCliente !== true) {
+            return res.status(401).json({
+                sucesso: false,
+                mensagem: 'Faça login como cliente para editar seu perfil.'
+            });
+        }
+
+        const {
+            nome_pessoa,
+            data_nascimento_pessoa,
+            genero_pessoa,
+            email_pessoa,
+            telefone_pessoa
+        } = req.body;
+
+        const cpf = usuario.cpf_pessoa;
+
+        const resultado = await query(
+            `UPDATE pessoa
+             SET
+                nome_pessoa = COALESCE($1, nome_pessoa),
+                data_nascimento_pessoa = COALESCE($2, data_nascimento_pessoa),
+                genero_pessoa = COALESCE($3, genero_pessoa),
+                email_pessoa = COALESCE($4, email_pessoa),
+                telefone_pessoa = COALESCE($5, telefone_pessoa)
+             WHERE cpf_pessoa = $6
+             AND EXISTS (
+                 SELECT 1 FROM cliente
+                 WHERE pessoa_cpf_pessoa = $6
+             )
+             RETURNING
+                cpf_pessoa,
+                nome_pessoa,
+                data_nascimento_pessoa,
+                genero_pessoa,
+                email_pessoa,
+                telefone_pessoa`,
+            [
+                nome_pessoa ?? null,
+                data_nascimento_pessoa ?? null,
+                genero_pessoa ?? null,
+                email_pessoa ?? null,
+                telefone_pessoa ?? null,
+                cpf
+            ]
+        );
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Cliente não encontrado.'
+            });
+        }
+
+        req.session.usuario.nome = resultado.rows[0].nome_pessoa;
+
+        return req.session.save((erro) => {
+            if (erro) {
+                console.error('Erro ao salvar sessão:', erro);
+                return res.status(500).json({
+                    sucesso: false,
+                    mensagem: 'Dados atualizados, mas houve um erro ao salvar a sessão.'
+                });
+            }
+
+            return res.json({
+                sucesso: true,
+                mensagem: 'Perfil atualizado com sucesso!',
+                cliente: resultado.rows[0]
+            });
+        });
+
+    } catch (erro) {
+        console.error('Erro ao atualizar perfil:', erro);
+
+        if (erro.code === '23505') {
+            return res.status(409).json({
+                sucesso: false,
+                mensagem: 'Este email já está cadastrado.'
+            });
+        }
+
+        if (erro.code === '22007' || erro.code === '22008') {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Data de nascimento inválida.'
+            });
+        }
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao atualizar perfil.'
+        });
+    }
+};

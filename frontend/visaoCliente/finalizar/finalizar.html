@@ -1,52 +1,56 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finalizar Compra</title>
+    <title>Finalizar Compra | After Hours</title>
     <link rel="stylesheet" href="/visaoCliente/finalizar/finalizar.css">
-
-
+    <script src="/visaoCliente/finalizar/finalizar.js" defer></script>
 </head>
 
 <body>
-
-     <!-- Cabeçalho -->
     <header>
         <div class="topo">
-            <h1>CandyShop - Conferir e confirmar a compra</h1>
-          
+            <a href="/login/visaocliente">AFTER HOURS.</a>
+            <h1>Finalizar compra</h1>
+            <p>Confira os ingressos antes de continuar.</p>
         </div>
-        <nav class="nav">
-            <ul class="nav__menu">
-                <li class="nav__menu-item"><a href="index.html">Início</a></li>          
-                <li class="nav__menu-item"><a href="#">Sobre</a></li>
-                <li class="nav__menu-item"><a href="#">Contato</a></li>
-            </ul>
-        </nav>
     </header>
 
-    
-      <table id="lista-finalizar">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Produto</th>
-                <th>Preço</th>
-                <th>Quantidade</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody id="listaFinalizar"></tbody>
-    </table>
+    <main class="container">
+        <p>AFTER HOURS / CHECKOUT</p>
+        <h2>Confirme seu pedido.</h2>
 
-    <h2 id="total-final"></h2>
-    <div class="container-botoes">
-        <button onclick="window.location.href='http://localhost:3001/login/visaoclientecarrinho'">← Voltar</button>
-        <button id="btn-finalizar">Ir para pagamento</button>
-    </div>
-    <script src="/visaoCliente/finalizar/finalizar.js"></script>
+        <table id="lista-finalizar">
+            <thead>
+                <tr>
+                    <th>Evento</th>
+                    <th>Ingresso</th>
+                    <th>Preço</th>
+                    <th>Quantidade</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="listaFinalizar"></tbody>
+        </table>
+
+        <h2 id="total-final">Total: R$ 0,00</h2>
+
+        <div class="container-botoes">
+            <button type="button"
+                onclick="window.location.href='/login/visaoclientecarrinho'">
+                ← Voltar ao carrinho
+            </button>
+
+            <button type="button" id="btn-finalizar" disabled>
+                CONFIRMAR PEDIDO ↗
+            </button>
+        </div>
+
+        <p id="mensagem-finalizar" role="status"></p>
+    </main>
 </body>
 
 </html>

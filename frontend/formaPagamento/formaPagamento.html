@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formas de Pagamento | After Hours</title>
+    <link rel="stylesheet" href="formaPagamento.css">
+    <script src="formaPagamento.js" defer></script>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="/menu" class="logo">
+        AFTER<span>HOURS.</span>
+    </a>
+    <a href="/menu" class="voltar">← Voltar ao menu</a>
+</header>
+
+<main class="container">
+
+    <div class="heading">
+        <p class="etiqueta">AFTER HOURS / ADMINISTRAÇÃO</p>
+        <h1>Formas de <span>pagamento.</span></h1>
+        <p>Gerencie as opções disponíveis para os clientes.</p>
+    </div>
+
+    <div class="layout">
+
+        <section class="painel">
+            <p class="etiqueta">CADASTRO</p>
+            <h2 id="tituloFormulario">Nova forma de pagamento</h2>
+
+            <form id="formPagamento">
+                <input type="hidden" id="idForma">
+
+                <label for="nomeForma">Nome da forma</label>
+                <input
+                    type="text"
+                    id="nomeForma"
+                    placeholder="Ex.: Pix"
+                    maxlength="100"
+                    required
+                >
+
+                <button type="submit" class="salvar">
+                    SALVAR FORMA ↗
+                </button>
+
+                <button type="button" id="cancelar" class="cancelar"
+                        hidden>
+                    Cancelar edição
+                </button>
+            </form>
+        </section>
+
+        <section class="painel">
+            <div class="lista-heading">
+                <div>
+                    <p class="etiqueta">GERENCIAMENTO</p>
+                    <h2>Formas cadastradas</h2>
+                </div>
+                <span id="contador">0 formas</span>
+            </div>
+
+            <div id="listaFormas">
+                <p class="vazio">Carregando...</p>
+            </div>
+        </section>
+
+    </div>
+
+    <p id="mensagem" role="status"></p>
+</main>
+
+<footer>
+    AFTER<span>HOURS.</span>
+    <p>YOUR NIGHT STARTS HERE.</p>
+</footer>
+
+</body>
+</html>

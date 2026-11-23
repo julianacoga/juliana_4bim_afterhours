@@ -1,10 +1,11 @@
 
 const { query } = require('../database');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 
 // Abrir a página do CRUD
 exports.abrirCrudPessoa = (req, res) => {
-    const usuario = req.cookies ? req.cookies.usuarioLogado : null;
+    const usuario = req.cookies?.usuarioLogado;
 
     if (usuario) {
         res.sendFile(
@@ -87,6 +88,9 @@ exports.criarPessoa = async (req, res) => {
             });
         }
 
+        // Gerar hash da senha
+        const senhaHash = await bcrypt.hash(senha_pessoa, 12);
+
         const result = await query(
             `INSERT INTO pessoa (
                 cpf_pessoa,
@@ -110,7 +114,7 @@ exports.criarPessoa = async (req, res) => {
                 nome_pessoa,
                 data_nascimento_pessoa || null,
                 genero_pessoa,
-                senha_pessoa,
+                senhaHash,
                 email_pessoa,
                 telefone_pessoa
             ]
@@ -235,10 +239,17 @@ exports.atualizarPessoa = async (req, res) => {
             });
         }
 
-        const senhaAtualizada =
-            senha_pessoa && senha_pessoa.trim() !== ''
-                ? senha_pessoa
-                : pessoaAtual.senha_pessoa;
+        // Manter o hash atual caso nenhuma senha nova seja informada
+        let senhaAtualizada = pessoaAtual.senha_pessoa;
+
+        // Se houver uma nova senha, gerar um novo hash
+        if (
+            senha_pessoa !== undefined &&
+            senha_pessoa !== null &&
+            senha_pessoa.trim() !== ''
+        ) {
+            senhaAtualizada = await bcrypt.hash(senha_pessoa, 12);
+        }
 
         const result = await query(
             `UPDATE pessoa
@@ -258,18 +269,25 @@ exports.atualizarPessoa = async (req, res) => {
                 email_pessoa,
                 telefone_pessoa`,
             [
-                nome_pessoa !== undefined ? nome_pessoa : pessoaAtual.nome_pessoa,
+                nome_pessoa !== undefined
+                    ? nome_pessoa
+                    : pessoaAtual.nome_pessoa,
+
                 data_nascimento_pessoa !== undefined
                     ? data_nascimento_pessoa
                     : pessoaAtual.data_nascimento_pessoa,
+
                 genero_pessoa !== undefined
                     ? genero_pessoa
                     : pessoaAtual.genero_pessoa,
+
                 senhaAtualizada,
                 emailAtualizado,
+
                 telefone_pessoa !== undefined
                     ? telefone_pessoa
                     : pessoaAtual.telefone_pessoa,
+
                 id
             ]
         );
@@ -362,7 +380,7 @@ exports.obterPessoaPorEmail = async (req, res) => {
                 email_pessoa,
                 telefone_pessoa
             FROM pessoa
-            WHERE email_pessoa = $1`,
+            WHERE LOWER(email_pessoa) = LOWER($1)`,
             [email_pessoa]
         );
 

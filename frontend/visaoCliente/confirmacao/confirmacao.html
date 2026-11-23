@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compra Confirmada | After Hours</title>
+    <link rel="stylesheet" href="/visaoCliente/confirmacao/confirmacao.css">
+    <script src="/visaoCliente/confirmacao/confirmacao.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a href="/login/visaocliente" class="logo">
+            AFTER<span>HOURS.</span>
+        </a>
+        <span class="header-label">YOUR NIGHT STARTS HERE.</span>
+    </header>
+
+    <main class="container">
+        <div class="icone-sucesso">✓</div>
+
+        <p class="etiqueta">AFTER HOURS / CHECKOUT</p>
+        <h1>COMPRA <span>CONFIRMADA.</span></h1>
+
+        <p class="subtitulo">
+            Seus ingressos estão registrados.
+            Sua próxima experiência começa aqui.
+        </p>
+
+        <section class="pedido-card">
+            <div class="pedido-topo">
+                <div>
+                    <p class="etiqueta">SEU PEDIDO</p>
+                    <h2 id="numero-pedido">Carregando...</h2>
+                </div>
+                <span class="status" id="status-pedido">CONFIRMADO</span>
+            </div>
+
+            <div id="lista-ingressos" class="lista-ingressos"></div>
+
+            <div class="total">
+                <span>VALOR TOTAL</span>
+                <strong id="valor-total">R$ 0,00</strong>
+            </div>
+        </section>
+
+        <div class="acoes">
+            <a href="/login/visaocliente" class="btn-principal">
+                EXPLORAR EVENTOS ↗
+            </a>
+        </div>
+
+        <p id="mensagem-erro" role="status"></p>
+    </main>
+
+    <footer>
+        AFTER<span>HOURS.</span>
+        <p>Ambiente de demonstração — nenhuma cobrança real é realizada.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Minha Conta | After Hours</title>
+
+    <link rel="stylesheet" href="minhaConta.css">
+    <script src="minhaConta.js" defer></script>
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <a href="../index.html" class="logo">AFTER<span>HOURS</span></a>
+
+        <a href="../index.html" class="botaoVoltar">
+            Voltar
+        </a>
+    </header>
+
+    <main class="conteudo">
+
+        <div class="tituloPagina">
+            <p class="subtitulo">SEU ESPAÇO</p>
+            <h1>Minha Conta</h1>
+            <p>Gerencie suas informações pessoais e mantenha seus dados atualizados.</p>
+        </div>
+
+        <section class="cartao">
+
+            <div class="cabecalhoCartao">
+                <div>
+                    <h2>Informações pessoais</h2>
+                    <p>Confira e atualize seus dados cadastrais.</p>
+                </div>
+
+                <button
+                    type="button"
+                    id="botaoEditar"
+                    class="botaoSecundario">
+                    Editar
+                </button>
+            </div>
+
+            <form id="formMinhaConta">
+
+                <div class="gradeCampos">
+
+                    <div class="campo">
+                        <label for="nome">Nome completo</label>
+                        <input type="text" id="nome" required disabled>
+                    </div>
+
+                    <div class="campo">
+                        <label for="cpf">CPF</label>
+                        <input type="text" id="cpf" disabled>
+                    </div>
+
+                    <div class="campo">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" required disabled>
+                    </div>
+
+                    <div class="campo">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" disabled>
+                    </div>
+
+                    <div class="campo">
+                        <label for="dataNascimento">Data de nascimento</label>
+                        <input type="date" id="dataNascimento" disabled>
+                    </div>
+
+                    <div class="campo">
+                        <label for="genero">Gênero</label>
+                        <select id="genero" disabled>
+                            <option value="">Selecione</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Outro">Outro</option>
+                            <option value="Prefiro não informar">
+                                Prefiro não informar
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="acoesFormulario" id="acoesFormulario" hidden>
+                    <button
+                        type="button"
+                        id="botaoCancelar"
+                        class="botaoSecundario">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="botaoPrincipal">
+                        Salvar alterações
+                    </button>
+                </div>
+
+            </form>
+
+            <p id="mensagemPerfil" class="mensagem" role="status"></p>
+
+        </section>
+
+        <section class="cartao">
+
+            <div class="cabecalhoCartao">
+                <div>
+                    <h2>Segurança da conta</h2>
+                    <p>Altere sua senha para manter sua conta protegida.</p>
+                </div>
+            </div>
+
+            <form id="formSenha">
+
+                <div class="gradeCampos">
+
+                    <div class="campo">
+                        <label for="senhaAtual">Senha atual</label>
+                        <input
+                            type="password"
+                            id="senhaAtual"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="novaSenha">Nova senha</label>
+                        <input
+                            type="password"
+                            id="novaSenha"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="confirmarSenha">Confirmar nova senha</label>
+                        <input
+                            type="password"
+                            id="confirmarSenha"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="acoesFormulario">
+                    <button type="submit" class="botaoPrincipal">
+                        Alterar senha
+                    </button>
+                </div>
+
+            </form>
+
+            <p id="mensagemSenha" class="mensagem" role="status"></p>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+/* Meus ingressos - visual After Hours */
+.meus-ingressos-section { padding: 42px 0; scroll-margin-top: 20px; }
+.meus-ingressos-section .section-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.ingressos-subtitulo { color:#a9a9ad; margin:12px 0 25px; }
+.ingressos-atualizar { background:transparent; color:#fff; border:1px solid #555; border-radius:8px; padding:10px 16px; cursor:pointer; }
+.ingressos-atualizar:hover { border-color:#ff6a00; color:#ff6a00; }
+.ingressos-atualizar:disabled { opacity:.5; cursor:wait; }
+.meus-ingressos-lista { display:grid; gap:18px; }
+.meu-pedido-card { background:#171719; border:1px solid #323236; border-radius:16px; padding:24px; color:#f7f7f7; }
+.meu-pedido-topo { display:flex; align-items:flex-start; justify-content:space-between; gap:15px; border-bottom:1px solid #343438; padding-bottom:18px; }
+.meu-pedido-topo h3 { margin:6px 0; font-size:1.4rem; }
+.meu-pedido-topo p, .ingresso-tipo, .pedido-nota { color:#aaa; font-size:.9rem; }
+.pedido-etiqueta { color:#ff6a00; letter-spacing:.12em; font-size:.7rem; font-weight:700; }
+.status-ingresso { border-radius:99px; padding:7px 12px; font-size:.8rem; font-weight:700; white-space:nowrap; }
+.status-ingresso.confirmado { background:#153b2b; color:#83e9b0; }
+.status-ingresso.pendente { background:#40321c; color:#ffd18c; }
+.meu-pedido-itens { padding:6px 0; }
+.meu-ingresso-item { display:flex; justify-content:space-between; align-items:center; gap:15px; padding:17px 0; border-bottom:1px solid #2b2b2e; }
+.meu-ingresso-item strong { white-space:nowrap; }
+.ingresso-evento { font-weight:700; margin:0 0 6px; }
+.ingresso-tipo { margin:0; }
+.meu-pedido-rodape { display:flex; justify-content:space-between; align-items:end; gap:16px; padding-top:18px; }
+.meu-pedido-rodape div { display:grid; gap:5px; }
+.meu-pedido-rodape div span { color:#aaa; font-size:.72rem; letter-spacing:.1em; }
+.meu-pedido-rodape div strong { font-size:1.3rem; color:#ff6a00; }
+.ingressos-vazio { padding:35px 24px; background:#171719; border:1px dashed #444; border-radius:16px; }
+.ingressos-vazio h3 { margin:0 0 10px; }
+.ingressos-vazio p, .ingressos-aviso { color:#aaa; }
+.ingressos-vazio a { display:inline-block; margin-top:12px; color:#ff6a00; font-weight:700; text-decoration:none; }
+@media (max-width:600px) { .meu-pedido-card { padding:18px; } .meu-pedido-topo, .meu-pedido-rodape { flex-wrap:wrap; } }

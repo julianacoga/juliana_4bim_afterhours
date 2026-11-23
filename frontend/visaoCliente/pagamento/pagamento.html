@@ -1,69 +1,99 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finalizar Pagamento</title>
+    <title>Pagamento | After Hours</title>
     <link rel="stylesheet" href="/visaoCliente/pagamento/pagamento.css">
+    <script src="/visaoCliente/pagamento/pagamento.js" defer></script>
 </head>
 
 <body>
-    <!-- Cabeçalho -->
     <header>
         <div class="topo">
-            <h1>CandyShop - Pagamento</h1>
-           
+            <h1>AFTER HOURS.</h1>
+            <p>YOUR NIGHT STARTS HERE.</p>
         </div>
-        <nav class="nav">
-            <ul class="nav__menu">
-                <li class="nav__menu-item"><a href="index.html">Início</a></li>
-                <li class="nav__menu-item"><a href="#">Sobre</a></li>
-                <li class="nav__menu-item"><a href="#">Contato</a></li>
-            </ul>
-        </nav>
     </header>
 
     <main class="container">
+
         <section class="resumo-pedido">
-            <h2>Resumo do Pedido</h2>
+            <p>AFTER HOURS / CHECKOUT</p>
+            <h2>Pagamento do pedido</h2>
+
+            <p id="numero-pedido">Carregando pedido...</p>
+
             <div class="valor-total">
-                <p>Valor Total:</p>
+                <p>Valor total:</p>
                 <p id="valor-total" class="valor">R$ 0,00</p>
             </div>
+
             <div class="valor-restante">
-                <p>Valor Restante:</p>
+                <p>Valor restante:</p>
                 <p id="valor-restante" class="valor">R$ 0,00</p>
             </div>
+
+            <p id="status-pedido"></p>
         </section>
 
         <section class="formas-pagamento">
-            <h2>Formas de Pagamento</h2>
+            <h2>Escolha como deseja pagar</h2>
+
+            <p>
+                Selecione uma ou mais formas de pagamento.
+                Esta é uma simulação acadêmica e nenhuma
+                cobrança real será realizada.
+            </p>
 
             <div class="selecao-pagamento">
-                <label for="forma-pagamento">Adicionar Forma de Pagamento:</label>
-                <label for="forma-pagamento">Forma de Pagamento</label>
-                <select id="forma-pagamento">
-                    <option value="">Selecione uma forma de pagamento</option>
+                <label for="forma-pagamento">
+                    Forma de pagamento
+                </label>
+
+                <select id="forma-pagamento" disabled>
+                    <option value="">
+                        Carregando formas de pagamento...
+                    </option>
                 </select>
-                <button type="button" id="btn-adicionar" class="btn-adicionar">Adicionar</button>
+
+                <button
+                    type="button"
+                    id="btn-adicionar"
+                    class="btn-adicionar"
+                    disabled>
+                    Adicionar
+                </button>
             </div>
 
             <form id="form-pagamento">
-                <div id="formas-adicionadas" class="formas-adicionadas">
-                    <!-- As formas de pagamento serão adicionadas aqui dinamicamente -->
+                <div
+                    id="formas-adicionadas"
+                    class="formas-adicionadas">
                 </div>
 
-                <button type="submit" id="btn-finalizar">Finalizar Pagamento</button>
+                <button
+                    type="submit"
+                    id="btn-finalizar"
+                    disabled>
+                    CONFIRMAR SIMULAÇÃO ↗
+                </button>
             </form>
+
+            <p id="mensagem-pagamento" role="status"></p>
+
+            <a href="/login/visaocliente">
+                ← Voltar aos eventos
+            </a>
         </section>
+
     </main>
 
     <footer>
-        <p>&copy; 2023 CandyShop - Todos os direitos reservados</p>
+        <p>AFTER HOURS. — YOUR NIGHT STARTS HERE.</p>
     </footer>
-
-    <script src="/visaoCliente/pagamento/pagamento.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,259 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap');
+
+:root {
+    --bg: #101010;
+    --surface: #1c1c1c;
+    --border: #343434;
+    --orange: #ff803d;
+    --muted: #a5a5a5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+}
+
+button, input {
+    font: inherit;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 25px 6%;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    font: 800 23px 'Sora', sans-serif;
+    letter-spacing: -1px;
+}
+
+.logo span,
+.heading h1 span,
+footer span {
+    color: var(--orange);
+}
+
+.voltar {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.voltar:hover {
+    color: var(--orange);
+}
+
+.container {
+    max-width: 1250px;
+    margin: auto;
+    padding: 65px 6% 100px;
+}
+
+.etiqueta {
+    color: var(--orange);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.heading {
+    margin-bottom: 45px;
+}
+
+.heading h1 {
+    font: 800 clamp(32px, 5vw, 55px) 'Sora', sans-serif;
+    letter-spacing: -2px;
+    margin: 12px 0;
+}
+
+.heading > p:last-child {
+    color: var(--muted);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.painel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 30px;
+}
+
+.painel h2 {
+    font: 700 20px 'Sora', sans-serif;
+    margin: 12px 0 28px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #494949;
+    border-radius: 9px;
+    background: #262626;
+    color: white;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--orange);
+}
+
+.salvar {
+    background: var(--orange);
+    color: #111;
+    border: none;
+    border-radius: 9px;
+    padding: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.salvar:hover {
+    background: #ff9a63;
+}
+
+.cancelar {
+    background: transparent;
+    border: 1px solid #555;
+    border-radius: 9px;
+    padding: 13px;
+    color: white;
+    cursor: pointer;
+}
+
+.cancelar[hidden] {
+    display: none;
+}
+
+.lista-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+#contador {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.forma-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.forma-item:last-child {
+    border-bottom: none;
+}
+
+.codigo {
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 1px;
+}
+
+.forma-item h3 {
+    font-size: 16px;
+    margin-top: 7px;
+}
+
+.acoes {
+    display: flex;
+    gap: 8px;
+}
+
+.acoes button {
+    background: #292929;
+    color: white;
+    border: 1px solid #444;
+    padding: 10px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.acoes .btn-editar:hover {
+    border-color: var(--orange);
+}
+
+.acoes .btn-excluir:hover {
+    border-color: #ff7777;
+    color: #ff7777;
+}
+
+.vazio {
+    padding: 25px 0;
+    color: var(--muted);
+}
+
+#mensagem {
+    margin-top: 25px;
+    font-size: 14px;
+}
+
+footer {
+    text-align: center;
+    padding: 35px;
+    border-top: 1px solid var(--border);
+    font: 800 18px 'Sora', sans-serif;
+}
+
+footer p {
+    font: 400 10px 'DM Sans', sans-serif;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-top: 10px;
+}
+
+@media (max-width: 850px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 550px) {
+    .painel {
+        padding: 20px;
+    }
+
+    .forma-item {
+        flex-wrap: wrap;
+    }
+}

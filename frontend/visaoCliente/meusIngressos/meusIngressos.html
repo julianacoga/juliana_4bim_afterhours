@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meus Ingressos | After Hours</title>
+
+    <link rel="stylesheet" href="/visaoCliente/cliente.css">
+    <link rel="stylesheet" href="/visaoCliente/meusIngressos/meusIngressos.css">
+</head>
+
+<body>
+
+    <!-- MENU LATERAL -->
+    <aside class="sidebar">
+
+        <a href="/login/visaocliente" class="logo">
+            AFTER<span>HOURS.</span>
+        </a>
+
+        <p class="menu-label">MENU</p>
+
+        <nav>
+            <a href="/login/visaocliente">
+                ⌂ Início
+            </a>
+
+            <a href="/login/visaocliente#eventos">
+                ♫ Eventos
+            </a>
+
+            <a href="/visaoCliente/carrinho/carrinho.html">
+                ♧ Carrinho
+            </a>
+
+            <a
+                href="/visaoCliente/meusIngressos.html"
+                class="active"
+            >
+                ▣ Meus ingressos
+            </a>
+
+            <a href="/login/visaocliente#conta">
+                ◎ Minha conta
+            </a>
+        </nav>
+
+        <button
+            type="button"
+            id="btnLogout"
+            class="logout"
+        >
+            ↪ Sair da conta
+        </button>
+
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="main-content">
+
+        <!-- CABEÇALHO -->
+        <header class="topbar">
+
+            <div>
+                <p class="welcome">
+                    ÁREA DO CLIENTE
+                </p>
+
+                <h2>
+                    Olá,
+                    <span id="nomeUsuario">...</span>!
+                </h2>
+            </div>
+
+            <a
+                href="/visaoCliente/carrinho/carrinho.html"
+                class="cart-button"
+            >
+                ♧ Carrinho
+            </a>
+
+        </header>
+
+        <!-- MEUS INGRESSOS -->
+        <section
+            class="meus-ingressos-section"
+            id="ingressos"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="section-label">
+                        SUAS EXPERIÊNCIAS
+                    </p>
+
+                    <h2>Meus ingressos</h2>
+                </div>
+
+                <button
+                    type="button"
+                    id="atualizarIngressos"
+                    class="ingressos-atualizar"
+                >
+                    Atualizar ↻
+                </button>
+
+            </div>
+
+            <p class="ingressos-subtitulo">
+                Seus eventos, suas histórias.
+                Acompanhe suas compras e confira
+                todos os seus ingressos em um só lugar.
+            </p>
+
+            <!-- LISTA CARREGADA PELO JAVASCRIPT -->
+            <div
+                id="listaMeusIngressos"
+                class="meus-ingressos-lista"
+                aria-live="polite"
+            >
+                <p class="ingressos-aviso">
+                    Carregando seus ingressos...
+                </p>
+            </div>
+
+        </section>
+
+        <!-- RODAPÉ -->
+        <footer>
+            <span>
+                AFTER<span class="orange">HOURS.</span>
+            </span>
+
+            <p>
+                Seu próximo momento começa aqui.
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script src="/visaoCliente/meusIngressos/meusIngressos.js"></script>
+
+    <script>
+        const API_CLIENTE = `http://${window.location.hostname}:3001`;
+
+        // VERIFICAR USUÁRIO LOGADO
+        async function verificarUsuarioIngressos() {
+            try {
+                const resposta = await fetch(
+                    `${API_CLIENTE}/login/verificaSeUsuarioEstaLogado`,
+                    {
+                        method: 'GET',
+                        credentials: 'include'
+                    }
+                );
+
+                const dados = await resposta.json();
+
+                if (!resposta.ok || dados.status !== 'ok') {
+                    window.location.replace(`${API_CLIENTE}/login`);
+                    return;
+                }
+
+                const nome = document.getElementById('nomeUsuario');
+
+                if (nome) {
+                    nome.textContent = dados.usuario.nome;
+                }
+
+            } catch (erro) {
+                console.error('Erro ao verificar usuário:', erro);
+                window.location.replace(`${API_CLIENTE}/login`);
+            }
+        }
+
+        // SAIR DA CONTA
+        async function sairDosIngressos() {
+            const botao = document.getElementById('btnLogout');
+            botao.disabled = true;
+
+            try {
+                const resposta = await fetch(
+                    `${API_CLIENTE}/login/logout`,
+                    {
+                        method: 'GET',
+                        credentials: 'include'
+                    }
+                );
+
+                if (!resposta.ok) {
+                    throw new Error('Erro ao sair da conta.');
+                }
+
+                sessionStorage.removeItem('carrinho');
+                sessionStorage.removeItem('dadosPagamento');
+
+                window.location.replace(`${API_CLIENTE}/login`);
+
+            } catch (erro) {
+                console.error('Erro no logout:', erro);
+                botao.disabled = false;
+                alert('Não foi possível sair da conta.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarUsuarioIngressos();
+
+            document.getElementById('btnLogout')
+                .addEventListener('click', sairDosIngressos);
+
+            const botaoAtualizar = document.getElementById(
+                'atualizarIngressos'
+            );
+
+            if (botaoAtualizar) {
+                botaoAtualizar.addEventListener(
+                    'click',
+                    carregarMeusIngressos
+                );
+            }
+        });
+    </script>
+
+</body>
+</html>

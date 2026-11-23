@@ -1,92 +1,208 @@
-/* === CONTAINER MASTER === */
-body, html {
-    height: 100%;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
+
+body {
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    background: #101010;
+    color: #ffffff;
+}
+
+/* FUNDO */
 
 .master-container {
+    min-height: 100vh;
     display: flex;
-    flex-direction: column;
-    justify-content: center; /* centraliza verticalmente */
-    align-items: center;     /* centraliza horizontalmente */
-    min-height: 100vh;       /* ocupa toda a altura da janela */
-    background: linear-gradient(135deg, #d4fcdc, #b8e7b8);
+    justify-content: center;
+    align-items: center;
+    padding: 30px 20px;
+
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255, 85, 45, 0.13), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(255, 85, 45, 0.09), transparent 30%),
+        #101010;
 }
 
+/* CARD */
 
-
-/* ===== CONTAINER PRINCIPAL ===== */
 .form-container {
-    width: 90%;
-    max-width: 450px;
-    min-height: 50vh;
-    background: white;
-    border-radius: 12px;
-    padding: 2.5rem;
-    box-shadow: 0 4px 15px rgba(45, 74, 45, 0.1);
-    border: 1px solid #011601;
+    width: 100%;
+    max-width: 440px;
+    padding: 48px 42px;
 
-    /* Flexbox centraliza os filhos */
+    background: #191919;
+    border: 1px solid #303030;
+    border-radius: 18px;
+
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+}
+
+/* LOGO */
+
+.logo {
+    display: inline-block;
+    margin-bottom: 42px;
+
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.logo span {
+    color: #ff5938;
+}
+
+/* TÍTULO */
+
+.form-container h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 9px;
+}
+
+.form-container > p {
+    color: #999999;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+/* FORMULÁRIO */
+
+#formLogin {
     display: flex;
     flex-direction: column;
-    align-items: center; /* centraliza horizontalmente os blocos */
-    justify-content: center; /* centraliza verticalmente */
 }
 
-/* ===== TÍTULO ===== */
-.form-container h2 {
-    color: #2d4a2d;
-    font-size: 1.8rem;
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-/* ===== TEXTOS (p e label) ===== */
-.form-container label,
-.form-container p {
+#formLogin label {
+    color: #eeeeee;
+    font-size: 13px;
     font-weight: 600;
-    font-size: 1.1rem;
-    color: #2d4a2d;
-    text-align: center;
-    width: 100%;
-    max-width: 320px;
-    margin: 0 auto 0.75rem auto; /* centraliza o bloco */
-    display: block; /* garante comportamento consistente */
+    margin-bottom: 9px;
 }
 
-/* ===== INPUT ===== */
-.form-container input {
+#formLogin input {
     width: 100%;
-    max-width: 320px;
-    padding: 0.8rem;
-    border: 2px solid #0ba10b;
-    border-radius: 6px;
-    font-size: 1rem;
-    background: white;
-    text-align: center;
-    margin: 0 auto 1.5rem auto;
-    display: block;
+    height: 49px;
+    padding: 0 15px;
+    margin-bottom: 23px;
+
+    background: #242424;
+    border: 1px solid #383838;
+    border-radius: 8px;
+
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+
+    outline: none;
+    transition: 0.25s;
 }
 
-/* ===== BOTÃO ===== */
-.form-container button {
+#formLogin input::placeholder {
+    color: #777777;
+}
+
+#formLogin input:focus {
+    border-color: #ff5938;
+    box-shadow: 0 0 0 3px rgba(255, 89, 56, 0.12);
+}
+
+/* BOTÃO */
+
+#formLogin button {
     width: 100%;
-    max-width: 320px;
-    padding: 0.8rem 1.5rem;
-    border: 1px solid #2d4a2d;
-    border-radius: 6px;
-    font-weight: 600;
+    height: 50px;
+    margin-top: 5px;
+
+    background: #ff5938;
+    border: none;
+    border-radius: 8px;
+
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+
     cursor: pointer;
-    background: linear-gradient(135deg, aquamarine, #40e0d0);
-    color: #2d4a2d;
-    text-align: center;
-    margin: 0 auto;
-    display: block;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: 0.25s;
 }
 
-.form-container button:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 10px rgba(64, 224, 208, 0.5);
+#formLogin button:hover {
+    background: #ff7356;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 89, 56, 0.2);
+}
+
+#formLogin button:active {
+    transform: translateY(0);
+}
+
+/* CADASTRO */
+
+.form-container .cadastro-link {
+    margin-top: 27px;
+    margin-bottom: 0;
+
+    text-align: center;
+    color: #999999;
+    font-size: 13px;
+}
+
+.cadastro-link a {
+    color: #ff5938;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.cadastro-link a:hover {
+    color: #ff8067;
+    text-decoration: underline;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 480px) {
+    .form-container {
+        padding: 38px 25px;
+    }
+
+    .form-container h2 {
+        font-size: 26px;
+    }
+
+    .logo {
+        margin-bottom: 35px;
+    }
+}
+
+.esqueciSenha {
+    text-align: right;
+    margin: 10px 0 20px;
+}
+
+.esqueciSenha a {
+    color: #f34b9b;
+    font-size: 13px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.esqueciSenha a:hover {
+    color: #ffffff;
+    text-decoration: underline;
 }

@@ -455,3 +455,337 @@ exports.deletarPedido = async (req, res) => {
         });
     }
 };
+
+
+/*
+========================================
+COMPRA DE INGRESSOS PELO CLIENTE
+========================================
+*/
+
+const { pool } = require('../database');
+
+// VALIDAR ITENS RECEBIDOS DO CARRINHO
+function validarCarrinho(ingressos) {
+    if (!Array.isArray(ingressos) || ingressos.length === 0) {
+        return {
+            valido: false,
+            mensagem: 'O carrinho está vazio.'
+        };
+    }
+
+    const ids = new Set();
+    const itens = [];
+
+    for (const item of ingressos) {
+        const id = Number(item.ingresso_id_ingresso);
+        const quantidade = Number(item.quantidade);
+
+        if (
+            !Number.isSafeInteger(id) ||
+            id <= 0 ||
+            !Number.isSafeInteger(quantidade) ||
+            quantidade <= 0 ||
+            ids.has(id)
+        ) {
+            return {
+                valido: false,
+                mensagem: 'Confira os ingressos e suas quantidades.'
+            };
+        }
+
+        ids.add(id);
+        itens.push({
+            ingresso_id_ingresso: id,
+            quantidade
+        });
+    }
+
+    return {
+        valido: true,
+        itens
+    };
+}
+
+// FINALIZAR PEDIDO DO CLIENTE LOGADO
+exports.finalizarCompraCliente = async (req, res) => {
+    const usuario = req.session?.usuario;
+
+    if (!usuario) {
+        return res.status(401).json({
+            sucesso: false,
+            mensagem: 'Faça login para finalizar a compra.'
+        });
+    }
+
+    const cpf = usuario.cpf_pessoa;
+
+    const validacao = validarCarrinho(req.body?.ingressos);
+
+    if (!validacao.valido) {
+        return res.status(400).json({
+            sucesso: false,
+            mensagem: validacao.mensagem
+        });
+    }
+
+    const conexao = await pool.connect().catch(erro => {
+        console.error('Erro ao conectar ao banco:', erro);
+        return null;
+    });
+
+    if (!conexao) {
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Não foi possível conectar ao banco.'
+        });
+    }
+
+    try {
+        await conexao.query('BEGIN');
+
+        // CONFIRMAR SE O USUÁRIO É CLIENTE
+        const cliente = await conexao.query(
+            `SELECT pessoa_cpf_pessoa
+             FROM public.cliente
+             WHERE pessoa_cpf_pessoa = $1`,
+            [cpf]
+        );
+
+        if (cliente.rows.length === 0) {
+            await conexao.query('ROLLBACK');
+
+            return res.status(403).json({
+                sucesso: false,
+                mensagem: 'Usuário não cadastrado como cliente.'
+            });
+        }
+
+        const itens = validacao.itens;
+        const ids = itens.map(item => item.ingresso_id_ingresso);
+
+        // CONSULTAR PREÇOS REAIS NO BANCO
+        const resultadoIngressos = await conexao.query(
+            `SELECT
+                id_ingresso,
+                nome_ingresso,
+                preco_unitario_ingresso
+             FROM public.ingresso
+             WHERE id_ingresso = ANY($1::INTEGER[])
+             ORDER BY id_ingresso
+             FOR SHARE`,
+            [ids]
+        );
+
+        if (resultadoIngressos.rows.length !== itens.length) {
+            await conexao.query('ROLLBACK');
+
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Um ou mais ingressos não existem.'
+            });
+        }
+
+        const ingressosBanco = new Map(
+            resultadoIngressos.rows.map(ingresso => [
+                Number(ingresso.id_ingresso),
+                ingresso
+            ])
+        );
+
+        // CRIAR PEDIDO SEM FUNCIONÁRIO
+        const resultadoPedido = await conexao.query(
+            `INSERT INTO public.pedido (
+                cliente_pessoa_cpf_pessoa,
+                funcionario_pessoa_cpf_pessoa,
+                status_pedido
+             )
+             VALUES ($1, NULL, 'Pendente')
+             RETURNING id_pedido, data_pedido`,
+            [cpf]
+        );
+
+        const pedido = resultadoPedido.rows[0];
+        let valorTotalCentavos = 0;
+
+        // SALVAR INGRESSOS DO PEDIDO
+        for (const item of itens) {
+            const ingresso = ingressosBanco.get(
+                item.ingresso_id_ingresso
+            );
+
+            const preco = Number(
+                ingresso.preco_unitario_ingresso
+            );
+
+            if (!Number.isFinite(preco) || preco < 0) {
+                throw new Error('Preço inválido no banco de dados.');
+            }
+
+            const precoCentavos = Math.round(preco * 100);
+
+            valorTotalCentavos +=
+                precoCentavos * item.quantidade;
+
+            await conexao.query(
+                `INSERT INTO public.pedido_has_ingresso (
+                    ingresso_id_ingresso,
+                    pedido_id_pedido,
+                    quantidade,
+                    preco_unitario
+                 )
+                 VALUES ($1, $2, $3, $4)`,
+                [
+                    item.ingresso_id_ingresso,
+                    pedido.id_pedido,
+                    item.quantidade,
+                    ingresso.preco_unitario_ingresso
+                ]
+            );
+        }
+
+        // CONFIRMAR TODAS AS ALTERAÇÕES
+        await conexao.query('COMMIT');
+
+        return res.status(201).json({
+            sucesso: true,
+            mensagem: 'Pedido criado com sucesso!',
+            id_pedido: pedido.id_pedido,
+            data_pedido: pedido.data_pedido,
+            status_pedido: 'Pendente',
+            valor_total: valorTotalCentavos / 100
+        });
+
+    } catch (erro) {
+        await conexao.query('ROLLBACK').catch(console.error);
+
+        console.error('Erro ao finalizar compra:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Não foi possível finalizar o pedido.'
+        });
+
+    } finally {
+        conexao.release();
+    }
+};
+
+// LISTAR COMPRAS DO CLIENTE LOGADO
+exports.listarMeusPedidos = async (req, res) => {
+    const usuario = req.session?.usuario;
+
+    if (!usuario) {
+        return res.status(401).json({
+            sucesso: false,
+            mensagem: 'Faça login para consultar suas compras.'
+        });
+    }
+
+    try {
+        const resultado = await query(
+            `SELECT
+                p.id_pedido,
+                p.data_pedido,
+                p.status_pedido,
+                COUNT(phi.ingresso_id_ingresso)::INTEGER
+                    AS total_itens,
+                COALESCE(
+                    SUM(phi.quantidade * phi.preco_unitario),
+                    0
+                ) AS valor_total
+             FROM public.pedido p
+             LEFT JOIN public.pedido_has_ingresso phi
+                ON phi.pedido_id_pedido = p.id_pedido
+             WHERE p.cliente_pessoa_cpf_pessoa = $1
+             GROUP BY p.id_pedido
+             ORDER BY p.data_pedido DESC`,
+            [usuario.cpf_pessoa]
+        );
+
+        return res.json({
+            sucesso: true,
+            pedidos: resultado.rows
+        });
+
+    } catch (erro) {
+        console.error('Erro ao listar compras:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao consultar compras.'
+        });
+    }
+};
+
+// CONSULTAR DETALHES DE UMA COMPRA DO CLIENTE
+exports.obterMeuPedido = async (req, res) => {
+    const usuario = req.session?.usuario;
+
+    if (!usuario) {
+        return res.status(401).json({
+            sucesso: false,
+            mensagem: 'Faça login para consultar o pedido.'
+        });
+    }
+
+    const id = Number(req.params.id);
+
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(400).json({
+            sucesso: false,
+            mensagem: 'ID do pedido inválido.'
+        });
+    }
+
+    try {
+        const resultadoPedido = await query(
+            `SELECT
+                p.id_pedido,
+                p.data_pedido,
+                p.status_pedido
+             FROM public.pedido p
+             WHERE p.id_pedido = $1
+               AND p.cliente_pessoa_cpf_pessoa = $2`,
+            [id, usuario.cpf_pessoa]
+        );
+
+        if (resultadoPedido.rows.length === 0) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Pedido não encontrado.'
+            });
+        }
+
+        const resultadoItens = await query(
+            `SELECT
+                phi.ingresso_id_ingresso,
+                phi.quantidade,
+                phi.preco_unitario,
+                i.nome_ingresso,
+                e.titulo_evento
+             FROM public.pedido_has_ingresso phi
+             INNER JOIN public.ingresso i
+                ON i.id_ingresso = phi.ingresso_id_ingresso
+             INNER JOIN public.evento e
+                ON e.id_evento = i.evento_id_evento
+             WHERE phi.pedido_id_pedido = $1`,
+            [id]
+        );
+
+        return res.json({
+            sucesso: true,
+            pedido: resultadoPedido.rows[0],
+            itens: resultadoItens.rows
+        });
+
+    } catch (erro) {
+        console.error('Erro ao consultar pedido:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao consultar pedido.'
+        });
+    }
+};
+

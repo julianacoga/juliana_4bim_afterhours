@@ -1,0 +1,215 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #101010;
+    color: #f7f7f7;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 26px 7%;
+    border-bottom: 1px solid #292929;
+}
+
+.logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+    letter-spacing: -1.5px;
+}
+
+.logo span,
+footer span {
+    color: #ff6a00;
+}
+
+.header-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #888;
+}
+
+.container {
+    max-width: 850px;
+    margin: 75px auto;
+    padding: 0 24px;
+    text-align: center;
+}
+
+.icone-sucesso {
+    width: 75px;
+    height: 75px;
+    border: 2px solid #ff6a00;
+    border-radius: 50%;
+    color: #ff6a00;
+    font-size: 40px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 30px;
+}
+
+.etiqueta {
+    color: #ff6a00;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(38px, 7vw, 72px);
+    font-weight: 700;
+    letter-spacing: -3px;
+    margin: 14px 0;
+}
+
+h1 span {
+    color: #ff6a00;
+}
+
+.subtitulo {
+    color: #999;
+    line-height: 1.7;
+    margin-bottom: 45px;
+}
+
+.pedido-card {
+    background: #1b1b1b;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 35px;
+    text-align: left;
+}
+
+.pedido-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 28px;
+    border-bottom: 1px dashed #444;
+}
+
+.pedido-topo h2 {
+    font-size: 30px;
+    margin-top: 8px;
+}
+
+.status {
+    color: #ff6a00;
+    background: #ff6a001a;
+    padding: 10px 14px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.lista-ingressos {
+    padding: 18px 0;
+}
+
+.ingresso {
+    padding: 18px 0;
+    border-bottom: 1px solid #303030;
+}
+
+.ingresso h3 {
+    font-size: 18px;
+    margin-bottom: 7px;
+}
+
+.ingresso p {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 25px;
+}
+
+.total span {
+    color: #999;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.total strong {
+    color: #ff6a00;
+    font-size: 30px;
+}
+
+.acoes {
+    margin-top: 35px;
+}
+
+.btn-principal {
+    display: inline-block;
+    background: #ff6a00;
+    color: #111;
+    padding: 17px 35px;
+    text-decoration: none;
+    font-weight: 800;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.btn-principal:hover {
+    background: #ff8c33;
+    transform: translateY(-2px);
+}
+
+#mensagem-erro {
+    margin-top: 20px;
+    color: #ff8c33;
+}
+
+footer {
+    padding: 30px;
+    text-align: center;
+    color: #777;
+    font-weight: 800;
+}
+
+footer p {
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+    .topbar {
+        padding: 20px;
+    }
+
+    .header-label {
+        display: none;
+    }
+
+    .container {
+        margin: 45px auto;
+    }
+
+    .pedido-card {
+        padding: 22px;
+    }
+
+    .total strong {
+        font-size: 23px;
+    }
+}
