@@ -2,6 +2,8 @@
 const db = require('../database.js');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 // ========================================
 // ABRIR TELAS
@@ -598,6 +600,213 @@ exports.atualizarSenha = async (req, res) => {
 
         return res.status(500).json({
             mensagem: 'Erro ao atualizar senha.'
+        });
+    }
+};
+
+ // ========================================
+ // RECUPERAÇÃO DE SENHA
+ // ========================================
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// ABRIR TELA ESQUECI SENHA
+exports.abrirEsqueciSenha = (req, res) => {
+    res.sendFile(
+        path.join(__dirname, '../../frontend/login/esqueciSenha.html')
+    );
+};
+
+// ABRIR TELA REDEFINIR SENHA
+exports.abrirRedefinirSenha = (req, res) => {
+    res.sendFile(
+        path.join(__dirname, '../../frontend/login/redefinirSenha.html')
+    );
+};
+
+// ENVIAR EMAIL DE RECUPERAÇÃO
+exports.esqueciSenha = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (
+            typeof email !== 'string' ||
+            !email.trim()
+        ) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Informe seu e-mail.'
+            });
+        }
+
+        const resposta = {
+            sucesso: true,
+            mensagem: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação.'
+        };
+
+        const resultado = await db.query(
+            `SELECT cpf_pessoa, nome_pessoa, email_pessoa
+             FROM pessoa
+             WHERE LOWER(email_pessoa) = LOWER($1)`,
+            [email.trim()]
+        );
+
+        if (resultado.rows.length !== 1) {
+            return res.json(resposta);
+        }
+
+        const pessoa = resultado.rows[0];
+
+        // GERAR TOKEN
+        const token = crypto.randomBytes(32).toString('hex');
+
+        const tokenHash = crypto
+            .createHash('sha256')
+            .update(token)
+            .digest('hex');
+
+        const validade = new Date(
+            Date.now() + 15 * 60 * 1000
+        );
+
+        // SALVAR TOKEN NO BANCO
+        await db.query(
+            `UPDATE pessoa
+             SET token_recuperacao = $1,
+                 validade_token = $2
+             WHERE cpf_pessoa = $3`,
+            [tokenHash, validade, pessoa.cpf_pessoa]
+        );
+
+        const link = `${process.env.APP_URL}/login/redefinirSenha?token=${token}`;
+
+        // ENVIAR EMAIL
+        await transporter.sendMail({
+            from: `"After Hours" <${process.env.EMAIL_USER}>`,
+            to: pessoa.email_pessoa,
+            subject: 'Recuperação de senha | After Hours',
+
+            html: `
+                <div style="
+                    background: #101010;
+                    color: #ffffff;
+                    padding: 40px;
+                    font-family: Arial, sans-serif;
+                    border-radius: 16px;
+                ">
+                    <h1>
+                        AFTER<span style="color: #a855f7;">HOURS.</span>
+                    </h1>
+
+                    <h2>Recuperação de senha</h2>
+
+                    <p>Recebemos uma solicitação para redefinir sua senha.</p>
+
+                    <p>Clique no botão abaixo para criar uma nova senha.</p>
+
+                    <a href="${link}" style="
+                        display: inline-block;
+                        background: #a855f7;
+                        color: white;
+                        padding: 15px 25px;
+                        border-radius: 30px;
+                        text-decoration: none;
+                        font-weight: bold;
+                    ">
+                        REDEFINIR SENHA
+                    </a>
+
+                    <p>Este link é válido por 15 minutos.</p>
+
+                    <p>Se você não solicitou a alteração, ignore este e-mail.</p>
+
+                    <hr style="border-color: #333;">
+
+                    <p>Equipe After Hours.</p>
+                </div>
+            `
+        });
+
+        return res.json(resposta);
+
+    } catch (erro) {
+        console.error('Erro na recuperação:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Não foi possível processar a solicitação.'
+        });
+    }
+};
+
+// REDEFINIR SENHA
+exports.redefinirSenha = async (req, res) => {
+    try {
+        const { token, novaSenha } = req.body;
+
+        if (
+            typeof token !== 'string' ||
+            !/^[a-f0-9]{64}$/.test(token) ||
+            typeof novaSenha !== 'string'
+        ) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Dados inválidos.'
+            });
+        }
+
+        if (
+            novaSenha.length < 8 ||
+            Buffer.byteLength(novaSenha, 'utf8') > 72
+        ) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'A senha deve ter pelo menos 8 caracteres e no máximo 72 bytes.'
+            });
+        }
+
+        const tokenHash = crypto
+            .createHash('sha256')
+            .update(token)
+            .digest('hex');
+
+        const senhaHash = await bcrypt.hash(novaSenha, 12);
+
+        const resultado = await db.query(
+            `UPDATE pessoa
+             SET senha_pessoa = $1,
+                 token_recuperacao = NULL,
+                 validade_token = NULL
+             WHERE token_recuperacao = $2
+               AND validade_token > NOW()
+             RETURNING cpf_pessoa`,
+            [senhaHash, tokenHash]
+        );
+
+        if (resultado.rows.length === 0) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Link inválido ou expirado.'
+            });
+        }
+
+        return res.json({
+            sucesso: true,
+            mensagem: 'Senha redefinida com sucesso!'
+        });
+
+    } catch (erro) {
+        console.error('Erro ao redefinir senha:', erro);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao redefinir senha.'
         });
     }
 };

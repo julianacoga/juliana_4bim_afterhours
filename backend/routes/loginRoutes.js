@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const router = express.Router();
+const { rateLimit } = require('express-rate-limit');
 
 const loginController = require('../controllers/loginController');
 
@@ -29,30 +30,10 @@ function verificarFuncionario(req, res, next) {
 
 // TELAS
 router.get('/', loginController.abrirTelaLogin);
-
-router.get(
-    '/visaocliente',
-    verificarLogin,
-    loginController.abrirVisaoCliente
-);
-
-router.get(
-    '/visaoclientecarrinho',
-    verificarLogin,
-    loginController.abrirVisaoClienteCarrinho
-);
-
-router.get(
-    '/visaoclientefinalizar',
-    verificarLogin,
-    loginController.abrirVisaoClienteFinalizar
-);
-
-router.get(
-    '/visaoclientepagamento',
-    verificarLogin,
-    loginController.abrirVisaoClientePagamento
-);
+router.get('/visaocliente',verificarLogin,loginController.abrirVisaoCliente);
+router.get('/visaoclientecarrinho',verificarLogin,loginController.abrirVisaoClienteCarrinho);
+router.get('/visaoclientefinalizar',verificarLogin,loginController.abrirVisaoClienteFinalizar);
+router.get('/visaoclientepagamento',verificarLogin, loginController.abrirVisaoClientePagamento);
 
 // ESCOLHER ENTRE ADMINISTRAÇÃO E CLIENTE
 router.get('/escolher-acesso', verificarFuncionario, (req, res) => {
@@ -67,22 +48,43 @@ router.get('/escolher-acesso', verificarFuncionario, (req, res) => {
 // AUTENTICAÇÃO
 router.post('/verificarEmail', loginController.verificarEmail);
 router.post('/verificarSenha', loginController.verificarSenha);
-
-router.get(
-    '/verificaSeUsuarioEstaLogado',
-    loginController.verificaSeUsuarioEstaLogado
-);
-
+router.get('/verificaSeUsuarioEstaLogado',loginController.verificaSeUsuarioEstaLogado);
 router.get('/logout', loginController.logout);
 
 // CADASTRO
 router.post('/cadastro', loginController.criarPessoa);
 
 // ALTERAR SENHA
-router.put(
-    '/alterarSenha',
-    verificarLogin,
-    loginController.atualizarSenha
-);
+router.put('/alterarSenha',verificarLogin,loginController.atualizarSenha);
+
+// RECUPERAÇÃO DE SENHA
+const limiteRecuperacao = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 5,
+    message: {
+        sucesso: false,
+        mensagem: 'Muitas tentativas. Aguarde 15 minutos.'
+    }
+});
+
+const limiteRedefinicao = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    message: {
+        sucesso: false,
+        mensagem: 'Muitas tentativas. Tente novamente mais tarde.'
+    }
+});
+
+// ABRIR TELAS
+router.get('/esqueciSenha', loginController.abrirEsqueciSenha);
+router.get('/redefinirSenha', loginController.abrirRedefinirSenha);
+
+// ENVIAR EMAIL
+router.post('/esqueciSenha',limiteRecuperacao,loginController.esqueciSenha);
+
+// REDEFINIR SENHA
+router.post('/redefinirSenha', limiteRedefinicao, loginController.redefinirSenha);
+
 
 module.exports = router;

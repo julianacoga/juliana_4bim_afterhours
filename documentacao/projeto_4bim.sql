@@ -16,13 +16,13 @@ DROP TABLE IF EXISTS public.pessoa CASCADE;
 -- ==========================================
 
 CREATE TABLE public.pessoa (
-    cpf_pessoa INT PRIMARY KEY,
+    cpf_pessoa VARCHAR(14) PRIMARY KEY,
     nome_pessoa VARCHAR(60) NOT NULL,
     data_nascimento_pessoa DATE,
     genero_pessoa VARCHAR(30),
     senha_pessoa VARCHAR(255) NOT NULL,
     email_pessoa VARCHAR(75) UNIQUE NOT NULL,
-    telefone_pessoa VARCHAR(14) UNIQUE NOT NULL
+	telefone_pessoa VARCHAR(20)
 );
 
 
@@ -32,8 +32,7 @@ CREATE TABLE public.pessoa (
 
 CREATE TABLE public.cargo (
     id_cargo SERIAL PRIMARY KEY,
-    nome_cargo VARCHAR(45) NOT NULL UNIQUE,
-    descricao_cargo VARCHAR(150)
+    nome_cargo VARCHAR(45) NOT NULL UNIQUE
 );
 
 
@@ -42,7 +41,7 @@ CREATE TABLE public.cargo (
 -- ==========================================
 
 CREATE TABLE public.funcionario (
-    pessoa_cpf_pessoa INT PRIMARY KEY,
+    pessoa_cpf_pessoa VARCHAR(14) PRIMARY KEY,
     salario_funcionario NUMERIC(10,2),
     cargo_id_cargo INTEGER NOT NULL,
 
@@ -59,13 +58,22 @@ CREATE TABLE public.funcionario (
 -- ==========================================
 
 CREATE TABLE public.cliente (
-    pessoa_cpf_pessoa INT PRIMARY KEY,
+    pessoa_cpf_pessoa VARCHAR(14) PRIMARY KEY,
     data_cadastro_cliente DATE DEFAULT CURRENT_DATE,
 
     FOREIGN KEY (pessoa_cpf_pessoa)
         REFERENCES public.pessoa(cpf_pessoa)
 );
 
+
+-- ==========================================
+-- TABELA CATEGORIA
+-- ==========================================
+
+CREATE TABLE public.categoria (
+    id_categoria SERIAL PRIMARY KEY,
+    nome_categoria VARCHAR(50) NOT NULL UNIQUE
+);
 
 -- ==========================================
 -- TABELA EVENTO
@@ -82,10 +90,15 @@ CREATE TABLE public.evento (
     imagem_evento VARCHAR(255),
     status_evento VARCHAR(30) DEFAULT 'Ativo',
 
-    funcionario_pessoa_cpf_pessoa INT NOT NULL,
+    funcionario_pessoa_cpf_pessoa VARCHAR(14) NOT NULL,
 
     FOREIGN KEY (funcionario_pessoa_cpf_pessoa)
-        REFERENCES public.funcionario(pessoa_cpf_pessoa)
+        REFERENCES public.funcionario(pessoa_cpf_pessoa),
+
+		categoria_id_categoria INTEGER NOT NULL,
+
+	FOREIGN KEY (categoria_id_categoria)
+    	REFERENCES public.categoria(id_categoria)
 );
 
 
@@ -118,8 +131,8 @@ CREATE TABLE public.pedido (
     data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status_pedido VARCHAR(30) DEFAULT 'Pendente',
 
-    cliente_pessoa_cpf_pessoa INT NOT NULL,
-    funcionario_pessoa_cpf_pessoa INT NOT NULL,
+    cliente_pessoa_cpf_pessoa VARCHAR(14) NOT NULL,
+    funcionario_pessoa_cpf_pessoa VARCHAR(14) NOT NULL,
 
     FOREIGN KEY (cliente_pessoa_cpf_pessoa)
         REFERENCES public.cliente(pessoa_cpf_pessoa),

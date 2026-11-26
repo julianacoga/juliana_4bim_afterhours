@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Redefinir senha | After Hours</title>
+    <link rel="stylesheet" href="/login/recuperarSenha.css">
+</head>
+
+<body>
+
+    <main class="master-container">
+        <div class="form-container">
+
+            <a href="/login" class="logo">
+                AFTER<span>HOURS.</span>
+            </a>
+
+            <span class="etiqueta">RECUPERAÇÃO DE CONTA</span>
+
+            <h2>Crie uma nova senha.</h2>
+
+            <p>Escolha uma senha segura para voltar a aproveitar suas experiências.</p>
+
+            <form id="formRedefinir">
+
+                <label for="novaSenha">Nova senha</label>
+
+                <input
+                    type="password"
+                    id="novaSenha"
+                    placeholder="Mínimo de 8 caracteres"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <label for="confirmarSenha">Confirme sua senha</label>
+
+                <input
+                    type="password"
+                    id="confirmarSenha"
+                    placeholder="Digite novamente sua senha"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <button type="submit" id="botaoSalvar">
+                    REDEFINIR SENHA ↗
+                </button>
+
+            </form>
+
+            <div id="mensagem" role="status"></div>
+
+            <a href="/login" class="voltar">
+                ← Voltar para o login
+            </a>
+
+        </div>
+    </main>
+
+    <script src="/login/redefinirSenha.js"></script>
+
+</body>
+</html>
