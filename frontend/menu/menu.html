@@ -10,10 +10,39 @@
 
 <body>
     <!-- Cabeçalho Semântico -->
-    <header>
-        <h1>AFTER HOURS</h1>
-        <p>Selecione o módulo que deseja gerenciar</p>
-    </header>
+    <header class="cabecalho">
+
+    <div class="cabecalhoTopo">
+
+        <div class="logo">
+            AFTER<span class="logo-destaque">HOURS.</span>
+        </div>
+
+        <div class="acoesMenu">
+
+            <a href="/login/visaocliente"
+               id="btnTrocarPerfil"
+               class="btnTrocarPerfil"
+               hidden>
+                ⇄ Acessar como cliente
+            </a>
+
+            <form action="/menu/logout" method="POST">
+                <button type="submit" class="btnSair">
+                    ↪ Sair
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="cabecalho-texto">
+        <h1>Painel administrativo.</h1>
+        <p>Selecione o módulo que deseja gerenciar.</p>
+    </div>
+
+</header>
 
     <!-- Conteúdo Principal -->
     <main class="container-master">

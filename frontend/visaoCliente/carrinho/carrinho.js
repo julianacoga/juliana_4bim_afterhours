@@ -7,6 +7,7 @@ const formatarPreco = valor =>
         currency: 'BRL'
     });
 
+// LER CARRINHO
 function lerCarrinho() {
     try {
         const dados = JSON.parse(
@@ -14,11 +15,13 @@ function lerCarrinho() {
         );
 
         return Array.isArray(dados) ? dados : [];
+
     } catch {
         return [];
     }
 }
 
+// SALVAR CARRINHO
 function salvarCarrinho(carrinho) {
     sessionStorage.setItem(
         'carrinho',
@@ -27,36 +30,44 @@ function salvarCarrinho(carrinho) {
 }
 
 // VERIFICAR LOGIN
+
 async function verificarAutorizacao() {
+    const nomeUsuario = document.getElementById('nomeUsuario');
+
     try {
         const resposta = await fetch(
             `${API_BASE_URL}/login/verificaSeUsuarioEstaLogado`,
-            { credentials: 'include' }
+            {
+                credentials: 'include'
+            }
         );
 
         if (!resposta.ok) {
-            window.location.replace(`${API_BASE_URL}/login`);
+            nomeUsuario.textContent = 'Visitante';
             return false;
         }
 
         const dados = await resposta.json();
 
         if (dados.status !== 'ok') {
-            window.location.replace(`${API_BASE_URL}/login`);
+            nomeUsuario.textContent = 'Visitante';
             return false;
         }
 
-        document.getElementById('nomeUsuario').textContent =
+        nomeUsuario.textContent =
             dados.usuario.nome || 'Cliente';
 
         return true;
 
     } catch (erro) {
         console.error('Erro de autenticação:', erro);
-        window.location.replace(`${API_BASE_URL}/login`);
+
+        nomeUsuario.textContent = 'Visitante';
+
         return false;
     }
 }
+
 
 // MONTAR CARRINHO
 function carregarCarrinho() {
@@ -72,8 +83,11 @@ function carregarCarrinho() {
         lista.innerHTML = `
             <div class="carrinho-vazio">
                 <div class="vazio-icone">♫</div>
+
                 <h3>Seu carrinho está vazio.</h3>
+
                 <p>Sua próxima experiência começa com um ingresso.</p>
+
                 <a href="/login/visaocliente">
                     EXPLORAR EVENTOS ↗
                 </a>
@@ -118,6 +132,7 @@ function carregarCarrinho() {
 
         const precoUnitario = document.createElement('p');
         precoUnitario.className = 'preco-unitario';
+
         precoUnitario.textContent =
             `${formatarPreco(preco)} por ingresso`;
 
@@ -134,23 +149,53 @@ function carregarCarrinho() {
         const quantidadeLabel = document.createElement('label');
         quantidadeLabel.textContent = 'Quantidade';
 
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.min = '1';
-        input.step = '1';
-        input.value = quantidade;
+        const seletor = document.createElement('div');
+        seletor.className = 'controleQuantidade';
 
-        if (Number.isFinite(estoque) && estoque >= 0) {
-            input.max = estoque;
-        }
+        // BOTÃO MENOS
+        const menos = document.createElement('button');
+        menos.type = 'button';
+        menos.textContent = '−';
+        menos.disabled = quantidade <= 1;
 
-        input.addEventListener('change', () => {
-            atualizarQuantidade(index, input.value);
+        menos.setAttribute(
+            'aria-label',
+            `Diminuir quantidade de ${item.nome}`
+        );
+
+        menos.addEventListener('click', () => {
+            atualizarQuantidade(index, quantidade - 1);
         });
+
+        // QUANTIDADE
+        const numero = document.createElement('span');
+        numero.textContent = quantidade;
+
+        // BOTÃO MAIS
+        const mais = document.createElement('button');
+        mais.type = 'button';
+        mais.textContent = '+';
+
+        mais.setAttribute(
+            'aria-label',
+            `Aumentar quantidade de ${item.nome}`
+        );
+
+        mais.disabled =
+            Number.isFinite(estoque) &&
+            quantidade >= estoque;
+
+        mais.addEventListener('click', () => {
+            atualizarQuantidade(index, quantidade + 1);
+        });
+
+        seletor.append(menos, numero, mais);
 
         const subtotalElemento = document.createElement('strong');
         subtotalElemento.className = 'subtotal';
-        subtotalElemento.textContent = formatarPreco(subtotal);
+
+        subtotalElemento.textContent =
+            formatarPreco(subtotal);
 
         const remover = document.createElement('button');
         remover.type = 'button';
@@ -163,7 +208,7 @@ function carregarCarrinho() {
 
         controles.append(
             quantidadeLabel,
-            input,
+            seletor,
             subtotalElemento,
             remover
         );
@@ -202,14 +247,14 @@ function atualizarQuantidade(index, valor) {
     const estoque = Number(item.estoque);
 
     if (!Number.isInteger(quantidade) || quantidade < 1) {
-        alert('A quantidade deve ser de pelo menos 1 ingresso.');
-        carregarCarrinho();
         return;
     }
 
-    if (Number.isFinite(estoque) && quantidade > estoque) {
+    if (
+        Number.isFinite(estoque) &&
+        quantidade > estoque
+    ) {
         alert(`Só existem ${estoque} ingressos disponíveis.`);
-        carregarCarrinho();
         return;
     }
 
@@ -236,11 +281,13 @@ function limparCarrinho() {
     }
 
     sessionStorage.removeItem('carrinho');
+
     carregarCarrinho();
 }
 
-// FINALIZAR
-function finalizarPedido() {
+// FINALIZAR PEDIDO
+
+async function finalizarPedido() {
     const carrinho = lerCarrinho();
 
     if (!carrinho.length) {
@@ -248,6 +295,7 @@ function finalizarPedido() {
         return;
     }
 
+    // VALIDAR QUANTIDADES
     for (const item of carrinho) {
         const quantidade = Number(item.quantidade);
         const estoque = Number(item.estoque);
@@ -255,24 +303,57 @@ function finalizarPedido() {
         if (
             !Number.isInteger(quantidade) ||
             quantidade < 1 ||
-            (Number.isFinite(estoque) && quantidade > estoque)
+            (
+                Number.isFinite(estoque) &&
+                quantidade > estoque
+            )
         ) {
             alert('Revise as quantidades dos ingressos.');
             return;
         }
     }
 
+    // VERIFICAR LOGIN
+    const autorizado = await verificarAutorizacao();
+
+    if (!autorizado) {
+        window.location.href =
+            `${API_BASE_URL}/login?compra=1`;
+
+        return;
+    }
+
+    // CONTINUAR COMPRA
     window.location.href =
         `${API_BASE_URL}/login/visaoclientefinalizar`;
 }
 
-// INICIAR
+
+// INICIALIZAÇÃO
+
 document.addEventListener('DOMContentLoaded', async () => {
     const autorizado = await verificarAutorizacao();
 
-    if (!autorizado) return;
+    // DEFINIR DESTINO DOS BOTÕES DE VOLTAR
+    if (!autorizado) {
+        document.querySelectorAll(
+            'a[href="/login/visaocliente"]'
+        ).forEach(link => {
+            link.href = `${API_BASE_URL}/`;
+        });
+    }
 
+    // CARREGAR CARRINHO MESMO SEM LOGIN
     carregarCarrinho();
+
+    // CORRIGIR LINK DO CARRINHO VAZIO
+    if (!autorizado) {
+        document.querySelectorAll(
+            'a[href="/login/visaocliente"]'
+        ).forEach(link => {
+            link.href = `${API_BASE_URL}/`;
+        });
+    }
 
     document.getElementById('btn-limpar')
         .addEventListener('click', limparCarrinho);

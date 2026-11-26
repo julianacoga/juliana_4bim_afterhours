@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do evento | After Hours</title>
+
+    <link rel="stylesheet" href="/visaoCliente/detalhesEvento/detalhesEvento.css">
+    <script src="/visaoCliente/detalhesEvento/detalhesEvento.js" defer></script>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <a href="/" class="logo">
+            AFTER<span>HOURS.</span>
+        </a>
+
+        <nav>
+            <a id="linkVoltar" href="/">← Voltar aos eventos</a>
+
+            <a id="linkConta" href="/login">
+                Entrar
+            </a>
+
+            <a href="/login/visaoclientecarrinho" class="linkCarrinho">
+                Carrinho (<span id="contadorCarrinho">0</span>)
+            </a>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <p id="mensagem">Carregando evento...</p>
+
+        <div id="conteudoEvento" hidden>
+
+            <section class="bannerEvento">
+                <img id="imagemEvento" alt="Imagem do evento">
+
+                <div class="bannerInfo">
+                    <span id="categoriaEvento" class="categoria"></span>
+                    <h1 id="tituloEvento"></h1>
+                </div>
+            </section>
+
+            <div class="layoutEvento">
+
+                <section class="informacoesEvento">
+
+                    <p class="etiqueta">AFTER HOURS / EXPERIÊNCIAS</p>
+
+                    <h2>Sobre o evento<span>.</span></h2>
+
+                    <div class="dadosEvento">
+                        <p>📍 <span id="localEvento"></span></p>
+                        <p>📅 <span id="dataEvento"></span></p>
+                        <p>🕒 <span id="horarioEvento"></span></p>
+                    </div>
+
+                    <p id="descricaoEvento"></p>
+
+                </section>
+
+                <aside class="painelIngressos">
+
+                    <p class="etiqueta">GARANTA SEU LUGAR</p>
+
+                    <h2>Ingressos<span>.</span></h2>
+
+                    <p class="subtitulo">
+                        Escolha a modalidade e a quantidade desejada.
+                    </p>
+
+                    <div id="listaIngressos"></div>
+
+                    <div class="resumo">
+                        <div>
+                            <small id="quantidadeTotal">0 ingressos</small>
+                            <p>Valor total</p>
+                        </div>
+
+                        <strong id="valorTotal">R$ 0,00</strong>
+                    </div>
+
+                    <button id="btnAdicionar" class="btnPrincipal" disabled>
+                        ADICIONAR AO CARRINHO ↗
+                    </button>
+
+                    <p id="avisoCompra" role="status"></p>
+
+                </aside>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer>
+        <a href="/" class="logo">AFTER<span>HOURS.</span></a>
+        <p>YOUR NIGHT STARTS HERE.</p>
+        <small>© 2026 After Hours.</small>
+    </footer>
+
+</body>
+</html>

@@ -13,14 +13,17 @@ async function verificarSenha(event) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/login/verificarSenha`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({ email, senha })
-        });
+        const response = await fetch(
+            `${API_BASE_URL}/login/verificarSenha`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ email, senha })
+            }
+        );
 
         const data = await response.json();
 
@@ -31,20 +34,43 @@ async function verificarSenha(event) {
             return;
         }
 
+        // VERIFICAR SE O LOGIN VEIO DE UMA COMPRA
+        const parametros = new URLSearchParams(
+            window.location.search
+        );
+
+        const veioDaCompra =
+            parametros.get('compra') === '1';
+
+        // ESCOLHER TIPO DE ACESSO
         if (data.destino === '/login/escolher-acesso') {
-            window.location.href = `${API_BASE_URL}/login/escolher-acesso`;
+            window.location.href =
+                `${API_BASE_URL}/login/escolher-acesso`;
+
             return;
         }
 
         // FUNCIONÁRIO / ADMINISTRADOR
         if (data.destino === '/menu') {
-            window.location.href = `${API_BASE_URL}/menu`;
+            window.location.href =
+                `${API_BASE_URL}/menu`;
+
             return;
         }
 
         // CLIENTE
         if (data.destino === '/login/visaocliente') {
-            window.location.href = `${API_BASE_URL}/login/visaocliente`;
+
+            if (veioDaCompra) {
+                window.location.href =
+                    `${API_BASE_URL}/login/visaoclientefinalizar`;
+
+                return;
+            }
+
+            window.location.href =
+                `${API_BASE_URL}/login/visaocliente`;
+
             return;
         }
 
@@ -52,6 +78,7 @@ async function verificarSenha(event) {
 
     } catch (erro) {
         console.error('Erro ao realizar login:', erro);
+
         alert('Não foi possível conectar ao servidor.');
     }
 }

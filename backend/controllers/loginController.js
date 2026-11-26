@@ -810,3 +810,12 @@ exports.redefinirSenha = async (req, res) => {
         });
     }
 };
+
+exports.abrirDetalhesEvento = (req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '../../frontend/visaoCliente/detalhesEvento/detalhesEvento.html'
+        )
+    );
+};

@@ -6,12 +6,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>After Hours | Área do Cliente</title>
+
     <link rel="stylesheet" href="/visaoCliente/cliente.css">
+    <link rel="stylesheet" href="/pesquisaEventos.css">
 </head>
 
 <body>
 
     <aside class="sidebar">
+
         <a href="/login/visaocliente" class="logo">
             AFTER<span>HOURS.</span>
         </a>
@@ -19,83 +22,215 @@
         <p class="menu-label">MENU</p>
 
         <nav>
-            <a href="/login/visaocliente" class="active">⌂ Início</a>
-            <a href="#eventos">♫ Eventos</a>
-            <a href="/visaoCliente/carrinho/carrinho.html">♧ Carrinho</a>
-            <a href="/visaoCliente/meusIngressos/meusIngressos.html">▣ Meus ingressos</a>
-            <a href="/visaoCliente/minhaConta/minhaConta.html">◎ Minha conta</a>
+
+            <a href="/login/visaocliente" class="active">
+                ⌂ Início
+            </a>
+
+            <a href="#eventos">
+                ♫ Eventos
+            </a>
+
+            <a href="/visaoCliente/carrinho/carrinho.html">
+                ♧ Carrinho
+            </a>
+
+            <a href="/visaoCliente/meusIngressos/meusIngressos.html">
+                ▣ Meus ingressos
+            </a>
+
+            <a href="/visaoCliente/minhaConta/minhaConta.html">
+                ◎ Minha conta
+            </a>
+
         </nav>
 
-        <button id="btnLogout" class="logout">
-            ↪ Sair da conta
-        </button>
+        <div class="acoesPerfil">
+
+            <a href="/menu"
+                id="btnTrocarPerfil"
+                class="btnTrocarPerfil"
+                hidden>
+                ⇄ Acessar como funcionário
+            </a>
+
+            <button id="btnLogout" class="logout">
+                ↪ Sair da conta
+            </button>
+
+        </div>
+
     </aside>
 
     <main class="main-content">
 
         <header class="topbar">
+
             <div>
-                <p class="welcome">ÁREA DO CLIENTE</p>
-                <h2>Olá, <span id="nomeUsuario">...</span>!</h2>
+
+                <p class="welcome">
+                    ÁREA DO CLIENTE
+                </p>
+
+                <h2>
+                    Olá, <span id="nomeUsuario">...</span>!
+                </h2>
+
             </div>
 
-            <a href="/visaoCliente/carrinho/carrinho.html" class="cart-button">
+            <a href="/visaoCliente/carrinho/carrinho.html"
+                class="cart-button">
                 ♧ Carrinho
             </a>
+
         </header>
 
         <section class="hero">
+
             <div class="hero-content">
-                <span class="tag">YOUR NIGHT STARTS HERE</span>
-                <h1>Viva momentos<br>que ficam.</h1>
+
+                <span class="tag">
+                    YOUR NIGHT STARTS HERE
+                </span>
+
+                <h1>
+                    Viva momentos<br>
+                    que ficam.
+                </h1>
+
                 <p>
                     Descubra experiências, encontre seu próximo evento
                     e garanta seu ingresso.
                 </p>
+
                 <a href="#eventos" class="hero-button">
                     EXPLORAR EVENTOS ↗
                 </a>
+
             </div>
+
         </section>
 
         <section class="events-section" id="eventos">
+
             <div class="section-heading">
+
                 <div>
-                    <p class="section-label">DESCUBRA</p>
+
+                    <p class="section-label">
+                        DESCUBRA
+                    </p>
+
                     <h2>Eventos disponíveis</h2>
+
                 </div>
 
-                <span id="quantidadeEventos">Carregando...</span>
+                <span id="quantidadeEventos">
+                    Carregando...
+                </span>
+
             </div>
 
-            <div id="listaEventos" class="events-grid">
-                <p class="loading">Carregando eventos...</p>
+            <!-- PESQUISA DE EVENTOS -->
+
+            <div class="areaPesquisaEventos">
+
+                <div class="pesquisaCliente">
+
+                    <svg width="22" height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        aria-hidden="true">
+
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m16 16 5 5"/>
+
+                    </svg>
+
+                    <input type="search"
+                        id="pesquisaEventos"
+                        aria-label="Pesquisar eventos"
+                        placeholder="Busque por evento, local ou categoria..."
+                        autocomplete="off">
+
+                    <button type="button"
+                        id="limparPesquisa"
+                        aria-label="Limpar pesquisa">
+                        ×
+                    </button>
+
+                </div>
+
+                <div id="filtrosCategoria"
+                    class="filtrosCategoria">
+                </div>
+
+                <p id="resultadoPesquisa"
+                    aria-live="polite">
+                </p>
+
             </div>
+
+            <!-- LISTA DE EVENTOS -->
+
+            <div id="listaEventos" class="events-grid">
+
+                <p class="loading">
+                    Carregando eventos...
+                </p>
+
+            </div>
+
         </section>
 
         <section class="placeholder-section" id="ingressos">
-            <p class="section-label">SEUS EVENTOS</p>
+
+            <p class="section-label">
+                SEUS EVENTOS
+            </p>
+
             <h2>Meus ingressos</h2>
+
             <p>
                 Em breve, você poderá visualizar todos
                 os seus ingressos por aqui.
             </p>
+
         </section>
 
         <section class="placeholder-section" id="conta">
-            <p class="section-label">PERFIL</p>
+
+            <p class="section-label">
+                PERFIL
+            </p>
+
             <h2>Minha conta</h2>
-            <p>Consulte e gerencie seus dados pessoais.</p>
+
+            <p>
+                Consulte e gerencie seus dados pessoais.
+            </p>
+
         </section>
 
         <footer>
-            <span>AFTER<span class="orange">HOURS.</span></span>
-            <p>Seu próximo momento começa aqui.</p>
+
+            <span>
+                AFTER<span class="orange">HOURS.</span>
+            </span>
+
+            <p>
+                Seu próximo momento começa aqui.
+            </p>
+
         </footer>
 
     </main>
 
     <script src="/visaoCliente/cliente.js"></script>
+    <script src="/pesquisaEventos.js"></script>
 
 </body>
+
 </html>

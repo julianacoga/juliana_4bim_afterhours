@@ -1,7 +1,8 @@
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
 const listaEventos = document.getElementById('listaEventos');
+
 
 async function carregarEventos() {
     try {
@@ -38,9 +39,11 @@ async function carregarEventos() {
 
             if (evento.imagem_evento) {
                 imagem.src = `${API_BASE_URL}/imagens/${evento.imagem_evento}`;
+
                 imagem.onerror = () => {
                     imagem.style.display = 'none';
                 };
+
             } else {
                 imagem.style.display = 'none';
             }
@@ -67,10 +70,11 @@ async function carregarEventos() {
             const horario = document.createElement('p');
             horario.textContent = `🕒 ${evento.horario_evento || 'Horário a definir'}`;
 
+            // BOTÃO PARA ENTRAR E COMPRAR
             const botao = document.createElement('a');
             botao.className = 'event-button';
-            botao.href = '../login/login.html';
-            botao.textContent = 'ENTRAR PARA COMPRAR ↗';
+            botao.href = `${API_BASE_URL}/visaoCliente/detalhesEvento/detalhesEvento.html?id=${Number(evento.id_evento)}`;
+            botao.textContent = 'VER DETALHES ↗';
 
             info.append(
                 categoria,

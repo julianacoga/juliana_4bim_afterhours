@@ -266,3 +266,71 @@ footer {
         padding: 22px 7%;
     }
 }
+
+
+/* TROCA DE PERFIL */
+
+.cabecalhoTopo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.acoesMenu {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btnTrocarPerfil,
+.btnSair {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.btnTrocarPerfil {
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.4);
+    color: var(--laranja);
+}
+
+.btnTrocarPerfil:hover {
+    background: var(--laranja);
+    color: #111;
+    transform: translateY(-2px);
+}
+
+.btnSair {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--borda);
+    color: var(--cinza);
+}
+
+.btnSair:hover {
+    border-color: #ff4545;
+    color: #ff4545;
+    background: rgba(255, 69, 69, 0.08);
+}
+
+.btnTrocarPerfil[hidden] {
+    display: none;
+}
+
+@media (max-width: 550px) {
+    .acoesMenu {
+        width: 100%;
+    }
+}

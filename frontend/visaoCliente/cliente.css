@@ -652,3 +652,51 @@ footer p {
         width: 100%;
     }
 }
+
+
+/* AÇÕES DO PERFIL */
+
+.acoesPerfil {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.acoesPerfil .logout {
+    margin-top: 0;
+    width: 100%;
+}
+
+.btnTrocarPerfil {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 10px;
+    background: rgba(255, 89, 56, 0.08);
+    border: 1px solid rgba(255, 89, 56, 0.35);
+    border-radius: 9px;
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: 0.25s ease;
+}
+
+.btnTrocarPerfil:hover {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btnTrocarPerfil[hidden] {
+    display: none;
+}
+
+@media (max-width: 650px) {
+    .acoesPerfil {
+        margin-top: 20px;
+    }
+}

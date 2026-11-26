@@ -5,93 +5,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Eventos | After Hours</title>
+    <title>Eventos | After Hours</title>
     <link rel="stylesheet" href="evento.css">
 </head>
 
 <body onload="inicializar()">
 
     <header>
-        <h1>Cadastro de eventos</h1>
-        <p>Gerencie os eventos do After Hours.</p>
+
+        <div class="cabecalhoTopo">
+
+            <div class="logo">
+                AFTER<span>HOURS.</span>
+            </div>
+
+            <nav class="abasCrud">
+
+                <button type="button"
+                    id="abaCadastro"
+                    class="abaCrud ativa"
+                    onclick="trocarAba('cadastro')">
+                    Cadastro de eventos
+                </button>
+
+                <button type="button"
+                    id="abaConsulta"
+                    class="abaCrud"
+                    onclick="trocarAba('consulta')">
+                    Eventos cadastrados
+                </button>
+
+            </nav>
+
+            <a href="/menu" class="btnVoltar">
+                ← Voltar ao menu
+            </a>
+
+        </div>
+
     </header>
 
     <main class="container-master">
 
-        <div class="conteudo-principal">
+        <div class="tituloPagina">
+
+            <span class="etiqueta">
+                ADMINISTRAÇÃO / EVENTOS
+            </span>
+
+            <h1 id="tituloPagina">
+                Gerenciar eventos.
+            </h1>
+
+            <p id="descricaoPagina">
+                Cadastre, edite e gerencie as experiências do After Hours.
+            </p>
+
+        </div>
+
+        <!-- ABA DE CADASTRO -->
+
+        <div class="conteudo-principal" id="painelCadastro">
 
             <section class="form-esquerda">
 
                 <h2>Dados do evento</h2>
 
-                <label for="inputId_evento">ID do evento</label>
+                <label for="inputId_evento">
+                    ID do evento
+                </label>
 
                 <div class="linha-id">
-                    <input type="text" name="inputId_evento"
-                        id="inputId_evento" placeholder="Ex: 1">
 
-                    <input type="button" value="Procure"
-                        id="btProcure" onclick="procure()">
+                    <input type="text"
+                        name="inputId_evento"
+                        id="inputId_evento"
+                        placeholder="Ex: 1">
 
-                    <input type="button" value="Inserir"
-                        id="btInserir" onclick="inserir()"
+                    <input type="button"
+                        value="Procure"
+                        id="btProcure"
+                        onclick="procure()">
+
+                    <input type="button"
+                        value="Inserir"
+                        id="btInserir"
+                        onclick="inserir()"
                         style="display:none;">
 
-                    <input type="button" value="Alterar"
-                        id="btAlterar" onclick="alterar()"
+                    <input type="button"
+                        value="Alterar"
+                        id="btAlterar"
+                        onclick="alterar()"
                         style="display:none;">
 
-                    <input type="button" value="Excluir"
-                        id="btExcluir" onclick="excluir()"
+                    <input type="button"
+                        value="Excluir"
+                        id="btExcluir"
+                        onclick="excluir()"
                         style="display:none;">
+
                 </div>
 
-                <label for="inputTitulo_evento">Título do evento</label>
+                <label for="inputTitulo_evento">
+                    Título do evento
+                </label>
+
                 <input type="text"
                     name="inputTitulo_evento"
                     id="inputTitulo_evento"
                     placeholder="Ex: Festival de Música">
 
-                <label for="inputDescricao_evento">Descrição</label>
+                <label for="inputDescricao_evento">
+                    Descrição
+                </label>
+
                 <textarea
                     name="inputDescricao_evento"
                     id="inputDescricao_evento"
                     placeholder="Descreva o evento"></textarea>
 
-                <label for="selectId_categoria">Categoria</label>
-                <select name="selectId_categoria"
-                    id="selectId_categoria" disabled>
+                <label for="selectId_categoria">
+                    Categoria
+                </label>
+
+                <select
+                    name="selectId_categoria"
+                    id="selectId_categoria"
+                    disabled>
+
                     <option value="">Carregando...</option>
+
                 </select>
 
-                <label for="inputLocal_evento">Local</label>
+                <label for="inputLocal_evento">
+                    Local
+                </label>
+
                 <input type="text"
                     name="inputLocal_evento"
                     id="inputLocal_evento"
                     placeholder="Ex: Parque de Exposições">
 
-                <label for="inputEndereco_evento">Endereço</label>
+                <label for="inputEndereco_evento">
+                    Endereço
+                </label>
+
                 <input type="text"
                     name="inputEndereco_evento"
                     id="inputEndereco_evento"
                     placeholder="Endereço completo do evento">
 
-                <label for="inputData_evento">Data do evento</label>
-                <input type="date"
-                    name="inputData_evento"
-                    id="inputData_evento">
+                <div class="linhaCampos">
 
-                <label for="inputHorario_evento">Horário</label>
-                <input type="time"
-                    name="inputHorario_evento"
-                    id="inputHorario_evento">
+                    <div class="campo">
 
-                <label for="selectStatus_evento">Status do evento</label>
-                <select name="selectStatus_evento"
+                        <label for="inputData_evento">
+                            Data do evento
+                        </label>
+
+                        <input type="date"
+                            name="inputData_evento"
+                            id="inputData_evento">
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label for="inputHorario_evento">
+                            Horário
+                        </label>
+
+                        <input type="time"
+                            name="inputHorario_evento"
+                            id="inputHorario_evento">
+
+                    </div>
+
+                </div>
+
+                <label for="selectStatus_evento">
+                    Status do evento
+                </label>
+
+                <select
+                    name="selectStatus_evento"
                     id="selectStatus_evento">
+
                     <option value="Ativo">Ativo</option>
                     <option value="Inativo">Inativo</option>
                     <option value="Cancelado">Cancelado</option>
+
                 </select>
 
                 <label for="inputFuncionario_evento">
@@ -103,22 +207,22 @@
                     id="inputFuncionario_evento"
                     placeholder="CPF do funcionário responsável">
 
-                <div id="divAviso">
-                    Informe o ID e clique em Procure
+                <div id="divAviso" aria-live="polite">
+                    Informe o ID e clique em Procure.
                 </div>
 
                 <div class="botoes-acao">
 
                     <input type="button"
-                        value="Salvar"
-                        id="btSalvar"
-                        onclick="salvar()"
-                        style="display:none;">
-
-                    <input type="button"
                         value="Cancelar"
                         id="btCancelar"
                         onclick="cancelarOperacao()"
+                        style="display:none;">
+
+                    <input type="button"
+                        value="Salvar"
+                        id="btSalvar"
+                        onclick="salvar()"
                         style="display:none;">
 
                 </div>
@@ -130,19 +234,18 @@
                 <h2>Imagem do evento</h2>
 
                 <p class="instrucao-imagem">
-                    (Clique na imagem para alterar)
+                    Clique na imagem para alterar.
                 </p>
 
                 <div class="img-container">
 
                     <img
                         id="imgevento"
-                        src="http://localhost:3001/imagens/silhueta.png"
+                        src="/imagens/silhueta.png"
                         alt="Imagem do evento"
                         onclick="acionarUpload()">
 
-                    <input
-                        type="file"
+                    <input type="file"
                         id="inputImagem"
                         accept="image/*"
                         style="display:none;"
@@ -150,16 +253,90 @@
 
                 </div>
 
+                <button type="button"
+                    class="btnImagem"
+                    onclick="acionarUpload()">
+                    ↑ Alterar imagem
+                </button>
+
             </aside>
 
         </div>
 
-        <section class="lista-evento">
+        <!-- ABA DE CONSULTA -->
 
-            <h3>Eventos cadastrados</h3>
+        <section class="lista-evento"
+            id="painelConsulta"
+            hidden>
+
+            <div class="cabecalhoConsulta">
+
+                <h2>Todos os eventos</h2>
+
+                <button type="button"
+                    class="btnNovo"
+                    onclick="novoEvento()">
+                    + Novo evento
+                </button>
+
+            </div>
+
+            <div class="barraPesquisa">
+
+                <div class="campoPesquisa">
+
+                    <svg width="20" height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8">
+
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m16 16 5 5"/>
+
+                    </svg>
+
+                    <input type="search"
+                        id="pesquisaEventos"
+                        aria-label="Pesquisar eventos"
+                        placeholder="Pesquisar nome, ID, local..."
+                        oninput="filtrarEventos()">
+
+                </div>
+
+                <select id="filtroCategoria"
+                    aria-label="Filtrar categoria"
+                    onchange="filtrarEventos()">
+
+                    <option value="">
+                        Todas as categorias
+                    </option>
+
+                </select>
+
+                <select id="filtroStatus"
+                    aria-label="Filtrar status"
+                    onchange="filtrarEventos()">
+
+                    <option value="">Todos os status</option>
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inativo">Inativo</option>
+                    <option value="Cancelado">Cancelado</option>
+
+                </select>
+
+                <button type="button"
+                    class="btnLimpar"
+                    onclick="limparFiltros()">
+                    Limpar
+                </button>
+
+            </div>
+
+            <p id="contadorResultados" aria-live="polite"></p>
 
             <div id="outputSaida">
-                Carregando...
+                Carregando eventos...
             </div>
 
         </section>
@@ -167,14 +344,21 @@
     </main>
 
     <footer>
+
+        <div class="logoRodape">
+            AFTER<span>HOURS.</span>
+        </div>
+
         <p>
-            &copy; 2026 After Hours. Todos os direitos reservados.
+            © 2026 After Hours. Todos os direitos reservados.
             <br>
             Juliana Coga - M32 2026
         </p>
+
     </footer>
 
     <script src="./evento.js"></script>
 
 </body>
+
 </html>
