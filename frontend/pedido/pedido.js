@@ -1,8 +1,14 @@
 
-const URL_API = 'http://localhost:3001';
+const URL_API = `http://${window.location.hostname}:3001`;
 
 let ingressosDisponiveis = [];
-let modo = '';
+
+function fetchAPI(url, opcoes = {}) {
+    return fetch(`${URL_API}${url}`, {
+        ...opcoes,
+        credentials: 'include'
+    });
+}
 
 async function inicializar() {
     bloquearCampos();
@@ -12,14 +18,16 @@ async function inicializar() {
 
 async function carregarIngressos() {
     try {
-        const resposta = await fetch(`${URL_API}/ingresso/listar`);
+        const resposta = await fetchAPI('/ingresso/listar');
         const resultado = await resposta.json();
 
-        if (!resposta.ok || !resultado.sucesso) {
-            throw new Error('Não foi possível carregar os ingressos.');
+        if (!resposta.ok || resultado.sucesso === false) {
+            throw new Error(resultado.mensagem || 'Erro ao carregar ingressos.');
         }
 
-        ingressosDisponiveis = resultado.ingressos;
+        ingressosDisponiveis = Array.isArray(resultado)
+            ? resultado
+            : resultado.ingressos || [];
 
     } catch (erro) {
         console.error(erro);
@@ -36,6 +44,9 @@ function bloquearCampos() {
     document.getElementById('inputCpf_funcionario').disabled = true;
     document.getElementById('selectStatus').disabled = true;
     document.getElementById('btAdicionar').disabled = true;
+
+    document.querySelectorAll('#listaItens input, #listaItens select, #listaItens button')
+        .forEach(elemento => elemento.disabled = true);
 }
 
 function liberarCampos() {
@@ -43,14 +54,22 @@ function liberarCampos() {
     document.getElementById('inputCpf_funcionario').disabled = false;
     document.getElementById('selectStatus').disabled = false;
     document.getElementById('btAdicionar').disabled = false;
+
+    document.querySelectorAll('#listaItens input, #listaItens select, #listaItens button')
+        .forEach(elemento => elemento.disabled = false);
 }
 
 function esconderBotoes() {
-    ['btInserir', 'btAlterar', 'btExcluir', 'btSalvar', 'btCancelar'].forEach(id => {
-        document.getElementById(id).style.display = 'none';
-    });
+    ['btInserir', 'btAlterar', 'btExcluir', 'btSalvar', 'btCancelar']
+        .forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
 
     document.getElementById('btProcure').style.display = 'inline-block';
+}
+
+function mostrarBotao(id) {
+    document.getElementById(id).style.display = 'inline-block';
 }
 
 function limparCampos() {
@@ -63,21 +82,15 @@ function limparCampos() {
 
 function adicionarItem(idSelecionado = '', quantidade = 1) {
     const lista = document.getElementById('listaItens');
-
     const item = document.createElement('div');
-    item.className = 'item-pedido';
 
-    const opcoes = ingressosDisponiveis.map(ingresso => `
-        <option value="${ingresso.id_ingresso}"
-            ${String(ingresso.id_ingresso) === String(idSelecionado) ? 'selected' : ''}>
-            ${ingresso.nome_ingresso} - ${ingresso.titulo_evento}
-        </option>
-    `).join('');
+    item.className = 'item-pedido';
 
     item.innerHTML = `
         <div class="item-pedido-cabecalho">
             <strong>Ingresso</strong>
-            <button type="button" class="btRemover" onclick="removerItem(this)">
+            <button type="button" class="btRemover"
+                onclick="removerItem(this)">
                 Remover
             </button>
         </div>
@@ -85,15 +98,28 @@ function adicionarItem(idSelecionado = '', quantidade = 1) {
         <label>Modalidade</label>
         <select class="selectIngresso" onchange="atualizarTotal()">
             <option value="">Selecione um ingresso</option>
-            ${opcoes}
         </select>
 
         <label>Quantidade</label>
         <input type="number" class="quantidadeItem" min="1"
-            value="${quantidade}" oninput="atualizarTotal()">
+            oninput="atualizarTotal()">
 
         <p class="subtotal">Subtotal: R$ 0,00</p>
     `;
+
+    const select = item.querySelector('.selectIngresso');
+
+    ingressosDisponiveis.forEach(ingresso => {
+        const opcao = document.createElement('option');
+
+        opcao.value = ingresso.id_ingresso;
+        opcao.textContent = `${ingresso.nome_ingresso} - ${ingresso.titulo_evento || ''}`;
+
+        select.appendChild(opcao);
+    });
+
+    select.value = String(idSelecionado);
+    item.querySelector('.quantidadeItem').value = quantidade;
 
     lista.appendChild(item);
     atualizarTotal();
@@ -102,6 +128,13 @@ function adicionarItem(idSelecionado = '', quantidade = 1) {
 function removerItem(botao) {
     botao.closest('.item-pedido').remove();
     atualizarTotal();
+}
+
+function formatarMoeda(valor) {
+    return Number(valor).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 }
 
 function atualizarTotal() {
@@ -115,23 +148,22 @@ function atualizarTotal() {
             i => String(i.id_ingresso) === String(id)
         );
 
-        const preco = ingresso ? Number(ingresso.preco_unitario_ingresso) : 0;
-        const subtotal = preco * (Number.isFinite(quantidade) ? quantidade : 0);
+        const preco = ingresso
+            ? Number(ingresso.preco_unitario_ingresso)
+            : 0;
+
+        const subtotal = preco * (
+            Number.isFinite(quantidade) ? quantidade : 0
+        );
 
         item.querySelector('.subtotal').textContent =
-            `Subtotal: ${subtotal.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            })}`;
+            `Subtotal: ${formatarMoeda(subtotal)}`;
 
         total += subtotal;
     });
 
     document.getElementById('valorTotal').textContent =
-        total.toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        });
+        formatarMoeda(total);
 }
 
 function obterDados() {
@@ -150,10 +182,10 @@ function obterDados() {
 
     return {
         cliente_pessoa_cpf_pessoa:
-            document.getElementById('inputCpf_cliente').value,
+            document.getElementById('inputCpf_cliente').value.trim(),
 
         funcionario_pessoa_cpf_pessoa:
-            document.getElementById('inputCpf_funcionario').value,
+            document.getElementById('inputCpf_funcionario').value.trim() || null,
 
         status_pedido:
             document.getElementById('selectStatus').value,
@@ -163,8 +195,8 @@ function obterDados() {
 }
 
 function validarDados(dados) {
-    if (!dados.cliente_pessoa_cpf_pessoa || !dados.funcionario_pessoa_cpf_pessoa) {
-        mostrarAviso('Informe o CPF do cliente e do funcionário.');
+    if (!dados.cliente_pessoa_cpf_pessoa) {
+        mostrarAviso('Informe o CPF do cliente.');
         return false;
     }
 
@@ -177,16 +209,17 @@ function validarDados(dados) {
 
     for (const item of dados.ingressos) {
         if (
-            !item.ingresso_id_ingresso ||
+            !Number.isInteger(item.ingresso_id_ingresso) ||
+            item.ingresso_id_ingresso <= 0 ||
             !Number.isInteger(item.quantidade) ||
             item.quantidade <= 0
         ) {
-            mostrarAviso('Selecione os ingressos e informe quantidades válidas.');
+            mostrarAviso('Confira os ingressos e as quantidades.');
             return false;
         }
 
         if (ids.has(item.ingresso_id_ingresso)) {
-            mostrarAviso('Não repita o mesmo ingresso. Ajuste a quantidade na linha existente.');
+            mostrarAviso('Não repita o mesmo ingresso.');
             return false;
         }
 
@@ -205,11 +238,12 @@ async function procure() {
     }
 
     try {
-        const resposta = await fetch(`${URL_API}/pedido/${id}`);
+        const resposta = await fetchAPI(`/pedido/${id}`);
         const resultado = await resposta.json();
 
         limparCampos();
         esconderBotoes();
+        bloquearCampos();
 
         if (resposta.ok && resultado.sucesso) {
             const pedido = resultado.pedido;
@@ -218,36 +252,42 @@ async function procure() {
                 pedido.cliente_pessoa_cpf_pessoa;
 
             document.getElementById('inputCpf_funcionario').value =
-                pedido.funcionario_pessoa_cpf_pessoa;
+                pedido.funcionario_pessoa_cpf_pessoa || '';
 
             document.getElementById('selectStatus').value =
                 pedido.status_pedido;
 
             resultado.itens.forEach(item => {
-                adicionarItem(item.ingresso_id_ingresso, item.quantidade);
+                adicionarItem(
+                    item.ingresso_id_ingresso,
+                    item.quantidade
+                );
             });
 
             bloquearCampos();
 
-            document.getElementById('btAlterar').style.display = 'inline-block';
-            document.getElementById('btExcluir').style.display = 'inline-block';
+            mostrarBotao('btAlterar');
+            mostrarBotao('btExcluir');
 
             mostrarAviso('Pedido encontrado!');
 
-        } else {
+        } else if (resposta.status === 404) {
             liberarCampos();
 
-            document.getElementById('btInserir').style.display = 'inline-block';
-            document.getElementById('btCancelar').style.display = 'inline-block';
+            mostrarBotao('btInserir');
+            mostrarBotao('btCancelar');
 
             adicionarItem();
 
-            mostrarAviso('Pedido não encontrado. Você pode cadastrar um novo.');
+            mostrarAviso('Pedido não encontrado. Cadastre um novo.');
+
+        } else {
+            throw new Error(resultado.mensagem || 'Erro ao consultar pedido.');
         }
 
     } catch (erro) {
         console.error(erro);
-        mostrarAviso('Não foi possível consultar o pedido.');
+        mostrarAviso(erro.message);
     }
 }
 
@@ -257,7 +297,7 @@ async function inserir() {
     if (!validarDados(dados)) return;
 
     try {
-        const resposta = await fetch(`${URL_API}/pedido`, {
+        const resposta = await fetchAPI('/pedido', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -271,16 +311,13 @@ async function inserir() {
             throw new Error(resultado.mensagem);
         }
 
-        document.getElementById('inputId_pedido').value = resultado.id_pedido;
+        document.getElementById('inputId_pedido').value =
+            resultado.id_pedido;
 
-        bloquearCampos();
-        esconderBotoes();
-
-        document.getElementById('btAlterar').style.display = 'inline-block';
-        document.getElementById('btExcluir').style.display = 'inline-block';
+        await procure();
+        await listar();
 
         mostrarAviso(resultado.mensagem);
-        await listar();
 
     } catch (erro) {
         console.error(erro);
@@ -294,9 +331,10 @@ function alterar() {
     document.getElementById('btAlterar').style.display = 'none';
     document.getElementById('btExcluir').style.display = 'none';
     document.getElementById('btProcure').style.display = 'none';
+    document.getElementById('inputId_pedido').disabled = true;
 
-    document.getElementById('btSalvar').style.display = 'inline-block';
-    document.getElementById('btCancelar').style.display = 'inline-block';
+    mostrarBotao('btSalvar');
+    mostrarBotao('btCancelar');
 
     mostrarAviso('Altere os dados e clique em Salvar.');
 }
@@ -308,7 +346,7 @@ async function salvar() {
     if (!validarDados(dados)) return;
 
     try {
-        const resposta = await fetch(`${URL_API}/pedido/${id}`, {
+        const resposta = await fetchAPI(`/pedido/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -322,14 +360,12 @@ async function salvar() {
             throw new Error(resultado.mensagem);
         }
 
-        bloquearCampos();
-        esconderBotoes();
+        document.getElementById('inputId_pedido').disabled = false;
 
-        document.getElementById('btAlterar').style.display = 'inline-block';
-        document.getElementById('btExcluir').style.display = 'inline-block';
+        await procure();
+        await listar();
 
         mostrarAviso(resultado.mensagem);
-        await listar();
 
     } catch (erro) {
         console.error(erro);
@@ -348,7 +384,7 @@ async function excluir() {
     if (!confirm('Deseja realmente excluir este pedido?')) return;
 
     try {
-        const resposta = await fetch(`${URL_API}/pedido/${id}`, {
+        const resposta = await fetchAPI(`/pedido/${id}`, {
             method: 'DELETE'
         });
 
@@ -359,8 +395,9 @@ async function excluir() {
         }
 
         cancelarOperacao();
-        mostrarAviso(resultado.mensagem);
         await listar();
+
+        mostrarAviso(resultado.mensagem);
 
     } catch (erro) {
         console.error(erro);
@@ -369,6 +406,7 @@ async function excluir() {
 }
 
 function cancelarOperacao() {
+    document.getElementById('inputId_pedido').disabled = false;
     document.getElementById('inputId_pedido').value = '';
 
     limparCampos();
@@ -379,15 +417,16 @@ function cancelarOperacao() {
 }
 
 async function listar() {
+    const saida = document.getElementById('outputSaida');
+
     try {
-        const resposta = await fetch(`${URL_API}/pedido/listar`);
+        const resposta = await fetchAPI('/pedido/listar');
         const resultado = await resposta.json();
 
         if (!resposta.ok || !resultado.sucesso) {
-            throw new Error('Erro ao listar pedidos.');
+            throw new Error(resultado.mensagem || 'Erro ao listar pedidos.');
         }
 
-        const saida = document.getElementById('outputSaida');
         saida.innerHTML = '';
 
         if (resultado.pedidos.length === 0) {
@@ -398,6 +437,7 @@ async function listar() {
         resultado.pedidos.forEach(pedido => {
             const item = document.createElement('div');
             item.className = 'item-lista-pedido';
+            item.style.cursor = 'pointer';
 
             const titulo = document.createElement('strong');
             titulo.textContent = `Pedido #${pedido.id_pedido}`;
@@ -409,18 +449,21 @@ async function listar() {
             data.textContent = `Data: ${new Date(pedido.data_pedido).toLocaleString('pt-BR')}`;
 
             const total = document.createElement('p');
-            total.textContent = `Total: ${Number(pedido.valor_total).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            })}`;
+            total.textContent = `Total: ${formatarMoeda(pedido.valor_total)}`;
 
             item.append(titulo, status, data, total);
+
+            item.addEventListener('click', () => {
+                document.getElementById('inputId_pedido').disabled = false;
+                document.getElementById('inputId_pedido').value = pedido.id_pedido;
+                procure();
+            });
+
             saida.appendChild(item);
         });
 
     } catch (erro) {
         console.error(erro);
-        document.getElementById('outputSaida').textContent =
-            'Erro ao carregar pedidos.';
+        saida.textContent = erro.message;
     }
 }

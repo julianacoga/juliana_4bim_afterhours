@@ -28,22 +28,36 @@
 
             <div class="linha-id">
                 <input type="number" id="inputId_pedido" min="1" placeholder="Ex: 1">
+
                 <input type="button" value="Procure" id="btProcure" onclick="procure()">
+
                 <input type="button" value="Inserir" id="btInserir" onclick="inserir()" style="display:none;">
+
                 <input type="button" value="Alterar" id="btAlterar" onclick="alterar()" style="display:none;">
+
                 <input type="button" value="Excluir" id="btExcluir" onclick="excluir()" style="display:none;">
             </div>
 
             <label for="inputCpf_cliente">CPF do cliente</label>
-            <input type="number" id="inputCpf_cliente" placeholder="CPF cadastrado como cliente">
 
-            <label for="inputCpf_funcionario">CPF do funcionário responsável</label>
-            <input type="number" id="inputCpf_funcionario" placeholder="CPF cadastrado como funcionário">
+            <input type="text" inputmode="numeric" maxlength="11"
+                id="inputCpf_cliente"
+                placeholder="CPF cadastrado como cliente">
+
+            <label for="inputCpf_funcionario">
+                CPF do funcionário responsável
+            </label>
+
+            <input type="text" inputmode="numeric" maxlength="11"
+                id="inputCpf_funcionario"
+                placeholder="Opcional para compras online">
 
             <label for="selectStatus">Status do pedido</label>
+
             <select id="selectStatus">
                 <option value="Pendente">Pendente</option>
                 <option value="Confirmado">Confirmado</option>
+                <option value="Aprovado">Aprovado</option>
                 <option value="Cancelado">Cancelado</option>
             </select>
 
@@ -51,6 +65,7 @@
 
             <div class="titulo-itens">
                 <h2>Ingressos do pedido</h2>
+
                 <button type="button" id="btAdicionar" onclick="adicionarItem()">
                     + Adicionar ingresso
                 </button>
@@ -68,8 +83,11 @@
             </div>
 
             <div class="botoes-acao">
-                <input type="button" value="Salvar" id="btSalvar" onclick="salvar()" style="display:none;">
-                <input type="button" value="Cancelar" id="btCancelar" onclick="cancelarOperacao()" style="display:none;">
+                <input type="button" value="Salvar" id="btSalvar"
+                    onclick="salvar()" style="display:none;">
+
+                <input type="button" value="Cancelar" id="btCancelar"
+                    onclick="cancelarOperacao()" style="display:none;">
             </div>
 
         </section>
