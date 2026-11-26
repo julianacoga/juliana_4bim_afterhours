@@ -1,68 +1,125 @@
-.
+﻿.
 ├── backend
-│   ├── controllers
-│   │   ├── cargoController.js
-│   │   ├── clienteController.js
-│   │   ├── funcionarioController.js
-│   │   ├── pessoaController.js
-│   │   ├── produtoController.js
-│   │   └── unidadeMedidaController.js
-│   ├── database.js
-│   ├── routes
-│   │   ├── cargoRoutes.js
-│   │   ├── clienteRoutes.js
-│   │   ├── funcionarioRoutes.js
-│   │   ├── pessoaRoutes.js
-│   │   ├── produtoRoutes.js
-│   │   └── unidadeMedidaRoutes.js
-│   └── server.js
-├── criarEstrutura.sh
+│   ├── controllers
+│   │   ├── cargoController.js
+│   │   ├── categoriaController.js
+│   │   ├── clienteController.js
+│   │   ├── eventoController.js
+│   │   ├── formaPagamentoController.js
+│   │   ├── funcionarioController.js
+│   │   ├── ingressoController.js
+│   │   ├── loginController.js
+│   │   ├── menuController.js
+│   │   ├── pagamentoController.js
+│   │   ├── pedidoController.js
+│   │   └── pessoaController.js
+│   ├── database.js
+│   ├── routes
+│   │   ├── cargoRoutes.js
+│   │   ├── categoriaRoutes.js
+│   │   ├── clienteRoutes.js
+│   │   ├── eventoRoutes.js
+│   │   ├── formaPagamentoRoutes.js
+│   │   ├── funcionarioRoutes.js
+│   │   ├── ingressoRoutes.js
+│   │   ├── loginRoutes.js
+│   │   ├── menuRoutes.js
+│   │   ├── pagamentoRoutes.js
+│   │   ├── pedidoRoutes.js
+│   │   └── pessoaRoutes.js
+│   └── server.js
 ├── documentacao
-│   ├── candyshop-202609010512-dump.sql
-│   ├── instrucoes_para_novos_cruds.md
-│   ├── postgres - candyshop - public.png
-│   └── prompt_continuar.md
+│   ├── Diagrama ER de Sistema de Eventos.png
+│   ├── instrucoes_para_novos_cruds.md
+│   ├── projeto_4bim.sql
+│   └── prompt_continuar.md
 ├── estrutura.txt
 ├── frontend
-│   ├── cargo
-│   │   ├── cargo.css
-│   │   ├── cargo.html
-│   │   └── cargo.js
-│   ├── menu
-│   │   ├── menu.css
-│   │   ├── menu.html
-│   │   └── menu.js
-│   ├── pessoa
-│   │   ├── pessoa.css
-│   │   ├── pessoa.html
-│   │   └── pessoa.js
-│   ├── produto
-│   │   ├── produto.css
-│   │   ├── produto.html
-│   │   └── produto.js
-│   └── unidade_medida
-│       ├── unidade_medida.css
-│       ├── unidade_medida.html
-│       └── unidade_medida.js
+│   ├── cadastro
+│   │   ├── cadastro.css
+│   │   ├── cadastro.html
+│   │   └── cadastro.js
+│   ├── cargo
+│   │   ├── cargo.css
+│   │   ├── cargo.html
+│   │   └── cargo.js
+│   ├── categoria
+│   │   ├── categoria.css
+│   │   ├── categoria.html
+│   │   └── categoria.js
+│   ├── evento
+│   │   ├── evento.css
+│   │   ├── evento.html
+│   │   └── evento.js
+│   ├── formaPagamento
+│   │   ├── formaPagamento.css
+│   │   ├── formaPagamento.html
+│   │   └── formaPagamento.js
+│   ├── index.html
+│   ├── ingresso
+│   │   ├── ingresso.css
+│   │   ├── ingresso.html
+│   │   └── ingresso.js
+│   ├── login
+│   │   ├── escolher-acesso.html
+│   │   ├── esqueciSenha.html
+│   │   ├── esqueciSenha.js
+│   │   ├── login.css
+│   │   ├── login.html
+│   │   ├── login.js
+│   │   ├── recuperarSenha.css
+│   │   ├── redefinirSenha.html
+│   │   └── redefinirSenha.js
+│   ├── menu
+│   │   ├── menu.css
+│   │   ├── menu.html
+│   │   └── menu.js
+│   ├── pedido
+│   │   ├── pedido.css
+│   │   ├── pedido.html
+│   │   ├── pedido.js
+│   │   ├── pesquisaDinamicaCliente.js
+│   │   └── pesquisaDinamicaStyle.css
+│   ├── pessoa
+│   │   ├── pessoa.css
+│   │   ├── pessoa.html
+│   │   └── pessoa.js
+│   ├── script.js
+│   ├── style.css
+│   └── visaoCliente
+│       ├── carrinho
+│       │   ├── carrinho.css
+│       │   ├── carrinho.html
+│       │   └── carrinho.js
+│       ├── cliente.css
+│       ├── cliente.js
+│       ├── confirmacao
+│       │   ├── confirmacao.css
+│       │   ├── confirmacao.html
+│       │   └── confirmacao.js
+│       ├── finalizar
+│       │   ├── finalizar.css
+│       │   ├── finalizar.html
+│       │   └── finalizar.js
+│       ├── index.html
+│       ├── meusIngressos
+│       │   ├── meusIngressos.css
+│       │   ├── meusIngressos.html
+│       │   └── meusIngressos.js
+│       ├── minhaConta
+│       │   ├── minhaConta.css
+│       │   ├── minhaConta.html
+│       │   └── minhaConta.js
+│       └── pagamento
+│           ├── pagamento.css
+│           ├── pagamento.html
+│           └── pagamento.js
 ├── imagens
-│   ├── 10.png
-│   ├── 11.png
-│   ├── 1.png
-│   ├── 22.png
-│   ├── 2.png
-│   ├── 3.png
-│   ├── 4.png
-│   ├── 50.png
-│   ├── 51.png
-│   ├── 5.png
-│   ├── 6.png
-│   ├── 7.png
-│   ├── 8.png
-│   ├── 9.png
-│   └── silhueta.png
+│   └── silhueta.png
+├── .gitignore
 ├── index.html
 ├── package.json
 ├── package-lock.json
 └── README.md
 
-11 directories, 54 files
+23 directories, 96 files
