@@ -90,16 +90,6 @@ O banco de dados relacional foi desenvolvido utilizando PostgreSQL, com relacion
 
 Todas as tabelas de negócio possuem pelo menos 10 registros para demonstração do sistema.
 
-### 🔗 Diagrama Entidade-Relacionamento
-
-![Diagrama do banco de dados](docs/diagramaBanco.png)
-
-## 🎨 Wireframes
-
-Representação da estrutura e organização das interfaces do sistema.
-
-![Wireframes](docs/wireframes.png)
-
 ## 🔒 Segurança
 
 A aplicação conta com mecanismos de autenticação e proteção de dados:
@@ -183,13 +173,11 @@ Os eventos, datas e preços cadastrados são demonstrativos e não representam a
 🏫 UTFPR — Campus Campo Mourão  
 🌪️ 2º ano — M32  
 📚 Desenvolvimento Web 1  
-👨‍🏫 Professor Radamés Halmeman  
+👨‍🏫 Professor Radames Halmeman 
 📅 4º Bimestre — 2026
 
 ---
 
 ### 🌙 AFTER HOURS
 
-*Life is made of experiences.*
-
-Desenvolvido com dedicação, criatividade e muitas linhas de código. 💜
+Desenvolvido com muitos recomeços. 💜
